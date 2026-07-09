@@ -1,0 +1,427 @@
+
+%! Author = chongsan
+%! Date = 2026/7/9
+% 仅优化排版格式，正文所有文字、公式、内容完全未做任何修改
+
+% Preamble 增强排版宏包，不改变原文内容
+
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=1in]{geometry}    % 标准页边距
+\usepackage{amsmath,amssymb}         % 完整数学符号支持
+\usepackage{tabularx}                % 自适应表格
+\usepackage{enumitem}                % 列表统一缩进
+\usepackage{hyperref}                % 超链接（不影响正文）
+\usepackage{indentfirst}             % 首行自动缩进
+\usepackage{caption}
+\usepackage[UTF8]{ctex}
+\usepackage{unicode-math}
+\usepackage{amsthm}
+
+% 全局列表统一格式
+\setlist[enumerate]{leftmargin=*,itemsep=0.3em}
+\setlist[itemize]{leftmargin=*,itemsep=0.3em}
+
+% 作者标注定义
+\newcommand{\authortarjan}{Robert E. Tarjan \textsuperscript{\dag}}
+\newcommand{\authorzwick}{Uri Zwick \textsuperscript{\ddag}}
+
+\begin{document}
+
+% 阅读笔记区块（原文一字未改，仅排版美化）
+\noindent 2026年7月9日
+\begin{quote}
+已通读豆包AI翻译的文档，仍有一些不解之处，例如：
+\begin{enumerate}
+    \item 第6部分的常驻空间上界 $N+(2r-1)+2(r-1)B+B=N+O(rN^{1/r})$ 的这个系数2是什么
+    \item 下标访问原生$O(r)$最坏时间是为什么，按我的理解顶多是二级指针，$O(1)$复杂度
+    \item 第6.2部分信用额度是什么鬼第一次听说，再看看
+    \item 第8部分看得有点云里雾里的，怀疑AI有删减
+\end{enumerate}
+此外，还有一种局部看得懂，整合起来又有点晕晕的奇妙感觉
+
+大致搞懂了它的数据结构构造（大成功？），复杂度分析也大致明白了
+
+趣事：第6.1部分的推论6.2中我还在想$r=\log N$时常驻空间为什么不是$O(\log N\cdot N^{1/\log N})$，突然意识到$N^{1/\log N}$是个常数
+\end{quote}
+以下为AI翻译的文档：
+\vspace{1em}
+
+% 论文标题、作者、摘要（替换Markdown标题，内容完全不变）
+\title{最优可变长数组}
+\author{\authortarjan \quad \authorzwick}
+\maketitle
+
+\begin{abstract}
+可变长数组支持在数组尾部（或两端）增删元素，同时能够根据下标常数时间访问任意元素。由于数组元素数量会动态变化，要实现空间高效的可变长数组，必须配套动态内存管理机制。经典\textbf{倍增扩容}方案可实现规模为$N$的数组仅占用$O(N)$空间，且单次操作均摊时间$O(1)$，甚至最坏时间$O(1)$。Sitarski、Brodnik等人提出了更优方案：存储规模$N$的数组仅需$N+O(\sqrt{N})$空间，单次操作仍保持$O(1)$时间；Brodnik等人还给出证明，该空间复杂度是理论下界。
+
+本文区分两类空间开销：一是数组常态存储、元素访问所需的常驻空间；二是扩容/缩容操作过程中临时占用的额外空间。对任意整数$r\ge2$，我们证明：若扩容、缩容时可短暂使用$N+O(N^{1-1/r})$临时空间，则常态存储规模$N$的数组仅需$N+O(N^{1/r})$常驻空间；下标访问最坏时间$O(1)$，增删操作均摊时间$O(r)$。
+
+我们通过一套抽象\textbf{扩容博弈}模型做精确分析，证明：若某类通用数据结构仅允许$N+O(N^{1/r})$常驻存储空间，即便只支持尾部添加与下标查询，尾部新增操作的均摊代价下界也为$\Omega(r)$。除非$r=2$，否则增删操作无法做到最坏时间$O(1)$。
+\end{abstract}
+
+\section{引言}
+数组与可变长数组是应用最广泛的数据结构。令人意外的是，本文将证明，关于它们仍存在大量未被充分挖掘的理论结论。我们提出一套简洁的全新可变长数组实现方案，多数场景下内存利用率优于此前所有设计。本文视角偏向理论，但给出的实现方案也具备实际工程价值。
+
+规模为$N$的数组是存储序列$a_0,a_1,\dots,a_{N-1}$的抽象数据结构：对任意$0\le i<N$，下标$i$对应元素可在常数时间读取/修改。数组最基础的实现方式是连续内存块，每块内存存储一个元素或元素指针，依托机器随机访问能力实现常数时间读写；但原生数组的容量固定。
+
+可变长数组（又称动态数组、动态表）允许数组容量动态增减，同时保证任意下标元素可常数时间读写。单纯缩小数组很简单：只需不再使用已分配内存的后半段，但这种方式内存利用率极低；扩容则更棘手——数组连续内存块末尾的内存大概率已被其他数据占用，因此可变长数组必须依赖动态内存管理。
+
+为简化讨论，本文大部分内容仅讨论\textbf{单端可变长数组}（仅在数组尾部增删元素）：数组规模从$N$增至$N+1$时，在末尾新增元素$a_N$；规模从$N$缩减至$N-1$时，丢弃末尾元素$a_{N-1}$。这类可变长数组是栈的泛化结构。本文所有结论均可拓展至两端均可增删的双端可变长数组（即双端队列deque）：只需用两个单端可变长数组拼接实现即可。
+
+教材中经典的可变长数组实现是\textbf{倍增扩缩容}（见Cormen等人《算法导论》17.4节）：初始分配一块定长内存；内存填满时，分配一块两倍大小的新内存，将全部元素拷贝过去并释放旧内存；当内存使用率低于1/4时，分配一半大小的新内存拷贝元素、释放旧内存。均摊分析可证明，单次扩容/缩容操作均摊代价$O(1)$，元素读写最坏时间$O(1)$；借助后台渐进重构技术，甚至能将扩缩容优化为最坏时间$O(1)$。
+
+维基百科记载，Java \texttt{ArrayList}、Python \texttt{PyListObject}、C++ STL \texttt{vector}等主流容器均采用几何扩缩容策略，扩容系数取1.25~2。
+
+倍增方案仅保证$O(N)$空间复杂度，虽能满足多数场景，但纯扩容场景下最多会浪费50\%已分配内存。更一般地，若扩容系数为$1+\alpha$，内存闲置比例可达$\frac{1}{1+\alpha}$；若缩小$\alpha$降低闲置占比，单次扩容均摊代价会上升至$O(\frac{1+\alpha}{\alpha})$。
+
+一个核心问题：能否构造仅占用$N+o(N)$空间、且所有操作$O(1)$时间的可变长数组？Sitarski与Brodnik等人给出肯定答案：设计实现仅需$N+O(\sqrt{N})$空间，我们将在第3节详细介绍。Brodnik等人同时证明该方案存在下界——任意可变长数组实现，在某些时刻必然占用$N+\Omega(\sqrt{N})$空间，第4节会复述其简洁证明。
+
+本文核心创新：区分\textbf{常驻存储空间}（常态存放数组、支持下标读写所需空间）与\textbf{扩缩容临时空间}（扩容/缩容过程中短暂占用的额外内存）。很多场景下，我们愿意牺牲少量临时内存，换取常态存储更高的紧凑度；例如程序中存在大量可变长数组，但同一时刻仅一个数组执行扩缩容。
+
+我们首个突破Brodnik等人下界的实现方案：常态存储仅$N+O(N^{1/3})$空间，仅在扩缩容时临时占用$N+O(N^{2/3})$空间；元素读写最坏时间$O(1)$，增删均摊$O(1)$。同时我们证明该方案渐近最优：任何仅用$N+O(N^{1/3})$常驻空间的实现，扩缩容时必然需要$N+\Omega(N^{2/3})$临时空间。
+
+更一般地，对任意$r\ge2$：
+\begin{enumerate}
+    \item 常态存储开销：$N+O(N^{1/r})$；
+    \item 扩缩容临时开销：$N+O(N^{1-1/r})$；
+    \item 下标访问最坏时间$O(1)$；
+    \item 尾部增删操作均摊时间$O(r)$。
+\end{enumerate}
+由于无法使用后台重构技术，除非$r=2$，否则$O(r)$的均摊代价无法优化为最坏时间$O(1)$。$r=2$对应Sitarski、Brodnik的经典方案。
+
+\subsection{论文章节结构}
+\begin{enumerate}
+    \item 第2节：精确形式化问题定义与计算模型；
+    \item 第3节：梳理前人相关工作，重点介绍Sitarski的HAT结构、Brodnik等人的方案；
+    \item 第4节：复述Brodnik的下界证明，并给出我们的拓展下界；
+    \item 第5节：给出$r=3$的完整构造（常驻$O(N^{1/3})$、临时$O(N^{2/3})$）；
+    \item 第6节：对任意$r\ge2$给出通用无递归实现，证明增删均摊$O(r)$；
+    \item 第7节：提出一套结构变换技巧，将常驻空间从$O(rN^{1/r})$优化至$O(N^{1/r})$，同时不破坏常数访问、$O(r)$均摊增删；
+    \item 第8节：抽象出\textbf{扩容博弈}模型并完整求解，用于证明下界；
+    \item 第9节：依托扩容博弈，证明仅使用$N+O(N^{1/r})$常驻空间时，尾部新增操作均摊代价下界$\Omega(r)$；
+    \item 第10节：总结与展望。
+\end{enumerate}
+
+\section{可变长数组形式化定义}
+可变长数组作为抽象数据类型，支持以下操作：
+\begin{enumerate}
+    \item $\text{Array}()$：创建空数组并返回；
+    \item $\text{A.Length}()$：返回数组当前元素个数；
+    \item $\text{A.Get}(i)$：返回下标$i$对应的元素$a_i$，要求$0\le i<\text{A.Length}()$；
+    \item $\text{A.Set}(i,a)$：将下标$i$元素修改为$a$，要求$0\le i<\text{A.Length}()$；
+    \item $\text{A.Grow}(a)$：数组长度$+1$，末尾新增元素$a$；
+    \item $\text{A.Shrink}()$：数组长度$-1$，丢弃末尾元素。
+\end{enumerate}
+
+本文仅允许在数组尾部增删元素。若支持任意位置插入删除（并同步平移后续元素下标），问题难度会大幅提升；此时所有操作最优时间界为$O(\frac{\log N}{\log\log N})$，且该界紧（Dietz、Fredman\&Saks）。另有一类方案：下标访问最坏$O(r)$，插入删除均摊$O(N^{1/r})$（Goodrich、Joannou等人）。再次强调：本文仅讨论尾部增删场景。
+
+我们假设内存管理器支持分配、释放任意长度的定长数组（类比C/C++的\texttt{malloc}/\texttt{free}），简化起见，单次分配/释放操作代价为常数；即便分配长度$N$的内存块代价为$O(N)$，本文所有均摊复杂度结论依然成立。本文不讨论内存管理器底层实现。
+
+可变长数组实现由若干动态分配的定长内存块（简称块）组成，分为三类：
+\begin{enumerate}
+    \item 数据块：存储数组元素，每个元素占一个机器字；
+    \item 索引块：存储指向其他块的指针，每个指针占一个机器字；
+    \item 辅助块：存放数据结构元信息，如各块长度。
+\end{enumerate}
+
+本文所有实现均遵循该框架。若数组当前规模为$N$，则全部数据块总容量至少为$N$（第4节定理4.1证明后补充讨论）。除主索引块外，所有块必须被某索引块内的指针引用，否则无法访问。数据结构总空间为所有已分配块的长度之和。
+
+\begin{definition}[$(s(N),t(N))$实现]
+设$s(N),t(N)$为单调不减函数。若某可变长数组满足：
+\begin{enumerate}
+    \item 存储规模$N$的数组时，常驻总空间不超过$N+s(N)$；
+    \item 执行扩容/缩容操作过程中，瞬时总空间不超过$N+t(N)$；
+\end{enumerate}
+则称其为$(s(N),t(N))$实现。
+\end{definition}
+
+\section{前人相关工作}
+设计空间高效可变长数组属于紧凑数据结构领域，Raman、Munro等人已有大量综述，但仅有少数文献专门研究本文定义的单端可变长数组。
+
+\subsection{基础单块实现}
+基础实现仅用一块连续定长内存承载数组：内存填满时，分配更大内存、拷贝全部元素、释放旧内存；内存空置过多时，分配更小内存拷贝元素。实现可自由选择新内存块的尺寸。
+\begin{enumerate}
+    \item 极致省常驻空间方案：每次增删都重新分配恰好等于元素数量的内存。常驻空间$N+O(1)$（仅存长度与内存指针），但单次增删均摊代价$\Omega(N)$；扩缩容时需同时保存新旧两块内存，临时空间$2N+O(1)$，仅适合极少扩缩容的场景。
+    \item 几何扩缩容（工程主流）：固定参数$\alpha>0$，内存填满时分配$(1+\alpha)N$大小新块；内存元素仅占当前块容量$\frac{1}{(1+\alpha)^2}$时，分配$\frac{N}{1+\alpha}$大小新块拷贝元素。简单计算可得：扩容均摊代价$\frac{1+\alpha}{\alpha}$，缩容均摊代价$\frac{1}{\alpha}$。合理选取$\alpha$可平衡空间与时间，适配绝大多数工程场景。
+\end{enumerate}
+
+\subsection{Sitarski的哈希数组（HAT）}
+Sitarski提出名为HAT（哈希数组树）的结构，但命名存在误导——不含哈希，本质分层链表。
+
+HAT维护长度为$B$的索引块，满足$\sqrt{N}\le B<4\sqrt{N}$；配套$\lceil N/B\rceil$或$\lceil N/B\rceil+1$个尺寸$B$的数据块。$N$个元素顺序存入前$\lceil N/B\rceil$块；$N$无法整除$B$时最后一块半满；存在$\lceil N/B\rceil+1$块则为空。索引块第$i$项存储第$i$个数据块指针。
+
+总常驻空间：$N+3B+2=N+O(\sqrt{N})$。$3B$为索引块+两块闲置数据块开销。下标$i$元素位于第$\lfloor i/B\rfloor$块、偏移$i\bmod B$，读写最坏$O(1)$；$B$取2的幂时可通过位运算快速计算下标。
+
+扩容逻辑：$\sqrt{N}<B$即$N<B^2$时，末尾块未满直接写入；已满但存在空块则写入空块；无空块则分配新$B$块。分配代价常数则扩容最坏$O(1)$；分配代价$O(B)$时扩容均摊$O(1)$。
+
+满载$N=B^2$时将$B$翻倍重构；初始$B$为2的幂则重构后不变。重构$O(N)$拷贝代价分摊至$\Omega(N)$次扩容，均摊$O(1)$。
+
+缩容对称：仅末尾两块全空才释放尾部块；$B=4\sqrt{N}$即$N=B^2/16$时折半重构。两次重构间至少$\Omega(N)$次操作，缩容均摊$O(1)$。
+
+重构仅需$O(\sqrt{N})$临时空间，新旧块逐块分配释放，无需完整保存两份数组。
+
+可通过双尺寸块+后台重构转为最坏时间版本，但复杂度大幅提升；下一节无需重构、元素不移动。
+
+\subsection{Brodnik等人的分层块结构}
+Brodnik独立提出分层方案，常驻$N+O(\sqrt{N})$，扩缩容最坏$O(1)$（分配常数时间）；优势：无全局重构、元素不移动。两种变体：
+\begin{enumerate}
+    \item 基础变体：数据块尺寸$1,2,3,\dots$；前$k$块总容量$\approx k^2/2$，$k=\lceil\frac{\sqrt{8N+1}-1}{2}\rceil$；末块半满，预留一块空块。索引块尺寸$\Theta(\sqrt{N})$，自身朴素动态数组实现。有空位直接写入；无空位分配新块，索引块满则扩容拷贝指针，后台拷贝实现最坏$O(1)$。下标块编号$\ell=\lceil\frac{\sqrt{8i+1}-1}{2}\rceil$，块内偏移$i-\frac{\ell(\ell-1)}{2}$，读写$O(1)$但需要开平方。
+    \item 无平方根变体：所有块尺寸为2的幂，引入超块，移位定位规避平方根运算。
+\end{enumerate}
+
+\section{Brodnik下界定理及其拓展}
+本节复述原始下界与分离空间拓展下界。
+\begin{theorem}
+任意仅支持扩容、下标访问的可变长数组，在某些时刻必然占用$N+\Omega(\sqrt{N})$空间，$N$为当前元素总数。
+\end{theorem}
+\begin{proof}
+完成$N$次扩容后设使用$k$块连续内存；全部数据块容量至少$N$，每块需一条指针，指针总开销$k$。
+\begin{itemize}
+    \item 若$k\ge\sqrt{N}$：总空间$\ge N+\sqrt{N}$，下界成立；
+    \item 若$k<\sqrt{N}$：必存在尺寸$\ell>\sqrt{N}$的块。该块在数组规模$N'\le N$时分配，分配瞬间总空间$N'+\ell>N'+\sqrt{N'}$，下界成立。
+\end{itemize}
+证毕。
+\end{proof}
+
+下界两条基础假设：
+\begin{enumerate}
+    \item $N$个独立$w$比特元素至少占用$N$机器字；
+    \item $k$条指针占用$k$机器字（地址空间$2^w$）。
+\end{enumerate}
+地址空间$2^{cw}(0<c<1)$时指针开销为$ck$，仅常数变化，不改变阶。
+
+\begin{theorem}[$(s(N),t(N))$分离下界]
+任意仅支持扩容、访问的$(s(N),t(N))$实现，满足$s(N)\cdot t(N)\ge N$。
+\end{theorem}
+\begin{proof}
+$N$个元素分散至多$s(N)$块，鸽巢原理存在块尺寸$\ge N/s(N)$。该块分配时刻瞬时额外空间$\ge N/s(N)$；$t(N)$单调，$t(N)\ge N/s(N)$，变形得$s(N)t(N)\ge N$。
+证毕。
+\end{proof}
+\begin{corollary}
+对任意整数$r\ge1$，常驻仅$N+O(N^{1/r})$的实现，扩容瞬时必有$N+\Omega(N^{1-1/r})$额外空间。
+\end{corollary}
+后文证明该下界紧。
+
+\section{$r=3$的极简实现：$(O(N^{1/3}),O(N^{2/3}))$方案}
+构造常驻$O(N^{1/3})$、临时$O(N^{2/3})$，访问最坏$O(1)$，增删均摊$O(1)$。
+
+核心改造HAT：外层块$N^{2/3}$、索引$N^{1/3}$，半满块嵌套一层HAT，嵌套额外$O((N^{2/3})^{1/2})=O(N^{1/3})$。合并拷贝瞬时$\Omega(N^{2/3})$临时空间，匹配下界。也可基于Brodnik分层构造。
+
+无递归描述：参数$N^{1/3}\le B\le4N^{1/3}$，两类块：
+\begin{enumerate}
+    \item 大块：尺寸$B^2$，总数约$N/B^2$，永久填满；
+    \item 小块：尺寸$B$，至多$2B$个，至多一块半满、至多一块空。
+\end{enumerate}
+两级索引分别管理大小块；$2B$小块满则合并为一块大块；无小块则拆分大块。所有访问最坏$O(1)$，增删均摊$O(1)$。
+
+\section{对任意$r\ge2$的通用$(O(rN^{1/r}),O(N^{1-1/r}))$实现}
+泛化$r=3$构造，无递归，常驻$O(rN^{1/r})$，临时$O(N^{1-1/r})$。
+
+参数$N^{1/r}\le B<4N^{1/r}$，块尺寸$B,B^2,\dots,B^{r-1}$。仅扩容每层最多$B$块；支持扩缩容放宽至每层$2B$块（冗余基数$B$计数器）。
+\begin{itemize}
+    \item $B^2,\dots,B^{r-1}$块永久填满；
+    \item 仅末尾$B$块可半满。
+\end{itemize}
+
+扩容逻辑：末尾$B$块有空直接写入；满且不足$2B$分配新$B$块；满$2B$则$B$个同尺寸小块合并高一阶大块，等价基数$B$进位计数。
+
+$N=B^r$时$B$翻倍全局重构；配套$r-1$层索引。常驻上界$N+(2r-1)+2(r-1)B+B=N+O(rN^{1/r})$；合并$B^{r-1}$块临时峰值$O(N^{1-1/r})$。
+
+原生下标访问最坏$O(r)$；6.3节优化至$O(1)$。增删均摊$O(r)$，元素逐层向上合并，重构分摊常数开销。
+
+缩容：每层上限$2B$块；满$2B$合并；无小块时拆分最小大块，均摊仍$O(r)$。
+
+\subsection{6.1 实现伪代码说明}
+$n_i$：尺寸$B^i$块数量；$A[i]$对应索引块；$n_0$末尾$B$块已存元素。
+\subsubsection{Grow(a) 扩容流程}
+\begin{enumerate}
+    \item 若$N=B^r$，执行$\text{Rebuild}(2B)$，$B$翻倍；
+    \item 若$n_1=2B,n_0=B$（$B$块全满），调用$\text{Combine-Blocks}$合并；
+    \item 无空位则分配新$B$块，$n_0$置0；
+    \item 写入新元素，$n_0,N$自增1。
+\end{enumerate}
+$\text{Combine-Blocks}$：最小未满层$k$，自底向上每层$B$小块合并一块大块，调整指针释放旧块。
+
+\subsubsection{Shrink() 缩容流程}
+\begin{enumerate}
+    \item 若$N=(B/4)^r$，执行$\text{Rebuild}(B/2)$，$B$折半；
+    \item 无$B$块调用$\text{Split-Blocks}$拆分大块；
+    \item 删除末尾元素，$n_0,N$自减1；$n_0=0$则释放空$B$块。
+\end{enumerate}
+$\text{Split-Blocks}$：最小非空大块拆多层小块，分配拷贝释放原块。
+
+辅助函数：
+\begin{itemize}
+    \item $\text{Allocate}(\ell)$：分配长度$\ell$块，返回指针；
+    \item $\text{Deallocate}(X)$：释放块$X$；
+    \item $\text{Copy}(X,x,Y,y,\ell)$：$X$偏移$x$起$\ell$元素拷贝至$Y$偏移$y$；
+    \item $\text{Rebuild}(B')$：以$B'$全局重构整套分层结构。
+\end{itemize}
+
+\begin{theorem}
+该实现为$(O(rN^{1/r}),O(N^{1-1/r}))$可变长数组；扩容缩容均摊$O(r)$，下标读写最坏$O(1)$。
+\end{theorem}
+
+\begin{corollary}
+取$r=\log N$，存在实现常驻$N+O(\log N)$，增删均摊$O(\log N)$，访问最坏$O(1)$。
+\end{corollary}
+
+\subsection{6.2 增删均摊代价证明（引理6.3）}
+操作代价定义为元素拷贝赋值次数。
+\begin{enumerate}
+    \item 扩容：基础写入代价1；每个底层元素分配$r-1$信用，每合并一层消耗1信用，合并均摊0，单次扩容均摊$O(r)$；
+    \item 缩容：每次缩容为每层增加固定信用；拆分拷贝由累积信用覆盖，拆分均摊0，单次缩摊$O(r)$；
+    \item 全局重构：两次重构间至少$\Omega(N)$次操作，总拷贝$N$分摊，不增加渐近阶。
+\end{enumerate}
+综上扩缩容均摊$O(r)$。
+
+\subsection{6.3 $O(1)$下标访问优化（引理6.4）}
+假设CPU内置常数$\text{msb}$（最高置位查询），改造结构：
+\begin{enumerate}
+    \item $B=2^b$（2的幂）；
+    \item 总规模冗余$B$进制$N=\sum_{j=0}^{r-1}n_j B^j,\;0\le n_j\le2B$；
+    \item 块计数压缩存入两机器字$N^0,N^1$，移位按位提取；
+    \item 预计算前缀容量$N_k$，表示尺寸$\le B^{k-1}$总元素。
+\end{enumerate}
+
+访问下标$i$步骤：
+\begin{enumerate}
+    \item 末尾偏移$x=N-1-i$；
+    \item $\text{msb}$定位进制最高位，确定块阶$k$；
+    \item 移位按位运算计算块内偏移，全程常数操作。
+\end{enumerate}
+无原生$\text{msb}$时复杂度$O(\log\log w)$，不改变渐近；工程$r$极小，遍历$r$层也实用。
+
+\section{数据结构变换优化常驻空间}
+$r(N)$随$N$缓慢增长时，将常驻$O(rN^{1/r})$降至$O(N^{1/r})$，维持$O(r)$均摊、$O(1)$访问。
+\begin{definition}[标准$(s(N),t(N))$实现]
+满足两条：
+\begin{enumerate}
+    \item 分配新块时顺序拷贝旧块，拷贝完成释放旧块；
+    \item 拷贝结束常驻回到$N+s(N)$。
+\end{enumerate}
+本文全部实现均为标准实现。
+\end{definition}
+
+\begin{lemma}
+任意标准$(s(N),O(N))$实现，可变换为$(s(N)+O(N/t(N)),s(N)+O(t(N)))$，不改变访问、均摊阶。
+\end{lemma}
+思路：超大块拆分多段拷贝，新增指针开销$O(N/t(N))$，临时峰值$s(N)+O(t(N))$。
+
+\begin{theorem}
+对$r(N)\le\frac{1}{2}\frac{\log N}{\log\log N}$，存在$(O(N^{1/r}),O(N^{1-1/r}))$实现：访问最坏$O(1)$，增删均摊$O(r)$。
+\end{theorem}
+证明：对$r'=2r$构造取$t(N)=N^{1-1/r}$；约束下$rN^{1/(2r)}\le N^{1/r}$，常驻简化为$O(N^{1/r})$。
+
+\section{扩容博弈：下界抽象模型}
+抽象单人博弈刻画标准实现扩容行为，用于证明$\Omega(r)$下界。
+\subsection{8.1 $(N,k,\ell)$扩容博弈定义}
+参数$N$总插入、$k$最大子数组数、$\ell$单块最大空位。初始$k$空数组$A_1\dots A_k$，存储倒置；$a_i$为$A_i$元素数。约束：
+\begin{enumerate}
+    \item 空数组全部前置；
+    \item 仅首个非空块允许$\ell$空位，其余填满；
+    \item 总闲置开销$k+\ell$，对应常驻额外空间。
+\end{enumerate}
+
+单次插入三类操作：
+\begin{enumerate}
+    \item 首块有空直接写入，代价1；
+    \item 无空位但有空数组，分配$\ell+1$新块存元素，代价1；
+    \item 全部填满：选$i$合并前$i$块为新$A_i$，代价$1+\sum_{j=1}^i a_j$。
+\end{enumerate}
+$C_{N,k,\ell}$：$N$次插入最小总代价；$A_{N,k,\ell}=C_{N,k,\ell}/N$单次均摊代价。
+
+\subsection{8.2 归约至$\ell=0$无空位}
+\begin{lemma}
+$N$整除$\ell+1$时，$C_{N,k,\ell}=(\ell+1)C_{N/(\ell+1),k,0}$，均摊代价相等。
+\end{lemma}
+直观：每$\ell+1$次填满一块，等价以块为单位运行$\ell=0$博弈。
+
+\subsection{8.3 $\ell=0$博弈精确求解}
+记$C_{N,k}=C_{N,k,0}$，状态$P_{N,k}$满足$\sum a_i=N$、空前置。
+\begin{theorem}
+\begin{enumerate}
+    \item 若$\binom{n+k-1}{k}-1\le N\le\binom{n+k}{k}-1$，总代价$C_{N,k}=(N+1)n-\binom{n+k}{k+1}$；
+    \item 区间内每次新增代价恒为$n$：$C_{N,k}-C_{N-1,k}=n$；
+    \item 最优状态充要：$\binom{n+i-2}{i}\le a_i\le\binom{n+i-1}{i},\forall i\in[k]$。
+\end{enumerate}
+\end{theorem}
+\begin{corollary}
+\begin{enumerate}
+    \item $N=\binom{n+k}{k}-1$时，$C_{N,k}=\frac{kn}{k+1}(N+1)$；
+    \item 区间均摊下界$A_{N,k}\ge\frac{1}{2}(n-1)$。
+\end{enumerate}
+\end{corollary}
+
+\subsection{8.4 最优策略：二项式计数器}
+唯一最优序列对应二项式计数器；维护$b_1\dots b_k$，每次找最小$i$满足$b_i<b_{i+1}$合并进位；全$b_i=n$时策略唯一。
+
+\subsection{8.5 博弈规则拓展}
+任意区间合并、无序合并不会降低最小代价，拓展博弈覆盖本文所有块合并/拆分操作。
+
+\section{扩容操作均摊代价下界}
+\begin{theorem}
+标准实现常驻仅$O(rN^{1/r})$、$r=O(\log N)$时，扩容均摊代价下界$\Omega(r)$。
+\end{theorem}
+证明：取$k=\Theta(rN^{1/r})$对应博弈最大子数组；二项式放缩证明博弈均摊至少线性$r$；标准实现等价博弈合法操作，故下界$\Omega(r)$。
+
+\section{总结}
+本文给出一族可变长数组，完整刻画常驻空间、临时扩缩容空间、增删均摊时间三者最优权衡，同时保证$O(1)$下标访问，几乎完整解决该理论问题。
+
+现有下界仅针对标准实现；引入不可压缩假设可推广至全部数据结构，证明无本质障碍。
+
+扩容博弈具备独立理论价值；未来可探索无需闭式解的归纳下界证明。
+
+% 参考文献 标准bib环境，内容一字不变
+\begin{thebibliography}{17}
+\bibitem[1]{bille2017fast} Philip Bille, Anders Roy Christiansen, Mikko Berggren Ettienne, and Inge Li Gørtz. Fast dynamic arrays. In Proc. of 25th ESA, volume 87 of LIPIcs, pages 16:1–16:13, 2017.
+\bibitem[2]{brodnik1999resizable} Andrej Brodnik, Svante Carlsson, Erik D. Demaine, J. Ian Munro, and Robert Sedgewick. Resizable arrays in optimal time and space. In Proc. of 6th WADS, pages 37–48, 1999.
+\bibitem[3]{brodnik1997trans} Andrej Brodnik, Peter Bro Miltersen, and J. Ian Munro. Trans-dichotomous algorithms without multiplication - some upper and lower bounds. In Proc. of 4th WADS, volume 1272 of Lecture Notes in Computer Science, pages 426–439. Springer, 1997.
+\bibitem[4]{cormen2009intro} Thomas H. Cormen, Charles E. Leiserson, Ronald L. Rivest, and Clifford Stein. Introduction to algorithms. MIT press, 3rd edition, 2009.
+\bibitem[5]{dietz1989optimal} Paul F. Dietz. Optimal algorithms for list indexing and subset rank. In Proc. of 1st WADS, volume 382 of Lecture Notes in Computer Science, pages 39–46. Springer, 1989.
+\bibitem[6]{fredman1989cell} Michael L. Fredman and Michael E. Saks. The cell probe complexity of dynamic data structures. In David S. Johnson, editor, Proc. of 21st STOC, pages 345–354. ACM, 1989.
+\bibitem[7]{fredman1993surpass} Michael L. Fredman and Dan E. Willard. Surpassing the information theoretic bound with fusion trees. J. Comput. Syst. Sci., 47(3):424–436, 1993.
+\bibitem[8]{goodrich1999tiered} Michael T. Goodrich and John G. Kloss II. Tiered vectors: Efficient dynamic arrays for rankbased sequences. In Proc. of 6th WADS, pages 205–216, 1999.
+\bibitem[9]{joannou2011empirical} Stelios Joannou and Rajeev Raman. An empirical evaluation of extendible arrays. In Proc. of 10th SEA, volume 6630 of Lecture Notes in Computer Science, pages 447–458. Springer, 2011.
+\bibitem[10]{kaplan2022simulate} Haim Kaplan, Robert E. Tarjan, Or Zamir, and Uri Zwick. Simulating a stack using queues. In Proc. of 33rd SODA, pages 1901–1924, 2022.
+\bibitem[11]{katajainen2016worst} Jyrki Katajainen. Worst-case-efficient dynamic arrays in practice. In Proc. of 15th SEA, volume 9685 of Lecture Notes in Computer Science, pages 167–183. Springer, 2016.
+\bibitem[12]{knuth2009taocp} Donald E Knuth. The Art of Computer Programming, Volume 4, Fascicle 1: Bitwise Tricks \& Techniques; Binary Decision Diagrams. Addison-Wesley, 2009.
+\bibitem[13]{munro2018succinct} J. Ian Munro and S. Srinivasa Rao. Succinct representation of data structures. In Handbook of Data Structures and Applications, pages 595–610. Chapman and Hall/CRC, 2018.
+\bibitem[14]{raman2001succinct} Rajeev Raman, Venkatesh Raman, and S. Srinivasa Rao. Succinct dynamic data structures. In Proc. of 7th WADS, volume 2125 of Lecture Notes in Computer Science, pages 426–437. Springer, 2001.
+\bibitem[15]{sitarski1996hat} Edward Sitarski. Algorithm alley: HATs: Hashed array trees. Dr. Dobb’s Journal of Software Tools, 21(9):107–??, September 1996.
+\bibitem[16]{wiki-dynarray} Wikipedia contributors. Dynamic array - Wikipedia, the free encyclopedia, 2022.
+\bibitem[17]{wiki-hat} Wikipedia contributors. Hashed array tree - Wikipedia, the free encyclopedia, 2022.
+\end{thebibliography}
+
+\vspace{2em}
+\section{关键术语对照表}
+\begin{tabularx}{\linewidth}{|l|X|}
+    \hline
+    英文原文 & 标准中文译法 \\
+    \hline
+    resizable array & 可变长数组 \\
+    dynamic array / vector & 动态数组 \\
+    amortized time & 均摊时间 \\
+    worst-case time & 最坏时间 \\
+    block & 内存块 \\
+    data block & 数据块 \\
+    index block & 索引块 \\
+    doubling technique & 倍增扩容法 \\
+    geometric expansion & 几何扩缩容 \\
+    HAT (Hashed Array Tree) & 哈希数组树 \\
+    succinct data structure & 紧凑数据结构 \\
+    lower bound / upper bound & 下界 / 上界 \\
+    cell probe model & 单元探测模型 \\
+    binomial counter & 二项式计数器 \\
+    growth game & 扩容博弈 \\
+    temporary space & 临时空间 \\
+    resident space & 常驻空间 \\
+    rebuild & 全局重构 \\
+    combine / split blocks & 块合并 / 块拆分 \\
+    \hline
+\end{tabularx}
+以上为AI翻译的文档。\\
+
+本文Latex格式有AI辅助修正，美化，但内容不变。
+
+\end{document}
