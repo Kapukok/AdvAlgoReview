@@ -116,9 +116,11 @@ $l=0$:
 ​	 (命题 8.12) 假设定理 8.6 (2) 对所有满足 $N'<N$ 且 $k'\leq k$ 的 $(N',k')$ 都成立, 并且对某个 $n\geq1$ 有 $\binom{n+k-1}{k}-1\leq N\leq\binom{n+k}{k}-1$, 取 $\mathbf{a}\in P_{N,k}$, 但不满足 $\forall i\in[k],\binom{n+i-2}{i}\leq a_i\leq\binom{n+i-1}{i}$: 
 
 1. 如果 $\exists i\in[k]$ 使得 $a_i<\binom{n+i-2}{i}$, 根据命题 8.11 (1),  $\exists j\in[k]$ 使得 $a_j>\binom{n+j-2}{j}$. 取 $\mathbf{b}=(b_1,b_2,\dots,b_k)\in P_{N,k}$, 其中 $b_i=a_i+1,b_j=a_j-1,\forall l\in[k]\backslash\{i,j\}$. 根据定理 8.6 (2), 有$C_{a_i,i}-C_{a_i-1,i}\leq n-2$ 且 $C_{a_j-1,j}-C_{a_j-2,j}\geq n-1$. 因此
-   $C(\mathbf{b})-C(\mathbf{a})=N+\sum_{l:b_l>0}C_{b_l-1,l}-N-\sum_{l:a_l>0}C_{a_l-1,l}=C_{b_i-1,i}+C_{b_j-1,j}-C_{a_i-1,i}-C_{a_j-1,j}=C_{a_i,i}+C_{a_j-2,j}-C_{a_i-1,i}-C_{a_j-1,j}=(C_{a_i,i}-C_{a_i-1,i})-(C_{a_j-1,j}-C_{a_j-2,j})<0$
+   
+   $\begin{align}C(\mathbf{b})-C(\mathbf{a})&=N+\sum_{l:b_l>0}C_{b_l-1,l}-N-\sum_{l:a_l>0}C_{a_l-1,l} (引理 8.4)\\&=C_{b_i-1,i}+C_{b_j-1,j}-C_{a_i-1,i}-C_{a_j-1,j}\\&=C_{a_i,i}+C_{a_j-2,j}-C_{a_i-1,i}-C_{a_j-1,j}\\&=(C_{a_i,i}-C_{a_i-1,i})-(C_{a_j-1,j}-C_{a_j-2,j})\\&<0\end{align}$
 2. 如果 $\exists j\in[k]$ 使得 $a_j<\binom{n+j-1}{j}$, 根据命题 8.11 (1),  $\exists i\in[k]$ 使得 $a_i>\binom{n+i-1}{i}$. 取 $\mathbf{b}=(b_1,b_2,\dots,b_k)\in P_{N,k}$, 其中 $b_i=a_i+1,b_j=a_j-1,\forall l\in[k]\backslash\{i,j\}$. 根据定理 8.6 (2), 有$C_{a_i,i}-C_{a_i-1,i}\leq n-1$ 且 $C_{a_j-1,j}-C_{a_j-2,j}\geq n$. 因此
-   $C(\mathbf{b})-C(\mathbf{a})=N+\sum_{l:b_l>0}C_{b_l-1,l}-N-\sum_{l:a_l>0}C_{a_l-1,l}=C_{b_i-1,i}+C_{b_j-1,j}-C_{a_i-1,i}-C_{a_j-1,j}=C_{a_i,i}+C_{a_j-2,j}-C_{a_i-1,i}-C_{a_j-1,j}=(C_{a_i,i}-C_{a_i-1,i})-(C_{a_j-1,j}-C_{a_j-2,j})<0$
+   
+   $\begin{align}C(\mathbf{b})-C(\mathbf{a})&=N+\sum_{l:b_l>0}C_{b_l-1,l}-N-\sum_{l:a_l>0}C_{a_l-1,l}(引理 8.4)\\&=C_{b_i-1,i}+C_{b_j-1,j}-C_{a_i-1,i}-C_{a_j-1,j}\\&=C_{a_i,i}+C_{a_j-2,j}-C_{a_i-1,i}-C_{a_j-1,j}\\&=(C_{a_i,i}-C_{a_i-1,i})-(C_{a_j-1,j}-C_{a_j-2,j})\\&<0\end{align}$
 
 ​	因此如果定理 8.6 (2) 对所有满足 $N'<N$ 且 $k'\leq k$ 的 $(N',k')$ 都成立, 并且对某个 $n\geq1$ 有 $\binom{n+k-1}{k}-1\leq N\leq\binom{n+k}{k}-1$, 取 $\mathbf{a}\in P_{N,k}$, 但不满足 $\forall i\in[k],\binom{n+i-2}{i}\leq a_i\leq\binom{n+i-1}{i}$, 那么一定存在 $\mathbf{b}$ 满足 $C(\mathbf{a})>C(\mathbf{b})$, 所以$C(\mathbf{a})>C_{N,k}$, 即 $\mathbf{a}$ 一定不是一个最优的最终状态. 
 
