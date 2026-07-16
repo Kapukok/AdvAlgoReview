@@ -43,7 +43,7 @@ Growth game:
 
 
 
-$l=0$: 
+$l=0$ 情况的分析: 
 
 ​	实际上, 空位的数量 $l$ 对降低平均成本没有帮助. 举例来说, 假设 $l=2$, 每次分配一个新的子数组后, 新的子数组内先放入一个新元素, 然后剩下 $2$ 个空位. 接下来两个新的元素只会依次填入这两个空位而没有玩家的操作空间. 
 
@@ -75,7 +75,7 @@ $l=0$:
 
 
 
-定理 8.6: 
+定理 8.6 的证明: 
 
 ​	论文在定理 8.6 中给出了关于 $C_{N,k}$ 的以下命题: 
 
@@ -128,8 +128,8 @@ $l=0$:
 
 ​	现在我们终于可以证明定理 8.6 了. 
 
-​	Basis: 由命题 8.8 可知, 定理在 $0\leq N\leq k$ 时成立.
-​	Induction: 我们需要证明如果定理对所有满足 $N'<N$ 且 $k'\leq k$ 的 $(N',k')$ 都成立, 那么对 $(N,k)$ 也成立. 由命题 8.10 可知, 所有满足 $\forall i\in[k],\binom{n+i-2}{i}\leq a_i\leq\binom{n+i-1}{i}$ 的 $\mathbf{a}\in P_{N,k}$ 都有 $C(\mathbf{a})=(N+1)n-\binom{n+k}{k+1}$, 同时由命题 8.12 可知不满足上述条件的 $\mathbf{a}$ 一定不是一个最优的最终状态, 所以最小成本 $C_{N,k}$ 就是 $(N+1)n-\binom{n+k}{k+1}$. 定理 8.6 的 (1) (3) 得证. 又由命题8.9可知 (2) 成立. 
+1. 由命题 8.8 可知, 定理在 $0\leq N\leq k$ 时成立.
+2. 我们需要证明如果定理对所有满足 $N'<N$ 且 $k'\leq k$ 的 $(N',k')$ 都成立, 那么对 $(N,k)$ 也成立. 由命题 8.10 可知, 所有满足 $\forall i\in[k],\binom{n+i-2}{i}\leq a_i\leq\binom{n+i-1}{i}$ 的 $\mathbf{a}\in P_{N,k}$ 都有 $C(\mathbf{a})=(N+1)n-\binom{n+k}{k+1}$, 同时由命题 8.12 可知不满足上述条件的 $\mathbf{a}$ 一定不是一个最优的最终状态, 所以最小成本 $C_{N,k}$ 就是 $(N+1)n-\binom{n+k}{k+1}$. 定理 8.6 的 (1) (3) 得证. 又由命题8.9可知 (2) 成立. 
 
 ​	定理 8.6 得证. 
 
@@ -137,6 +137,72 @@ $l=0$:
 
 ​	 (推论 8.13)
 
-1. 如果 $N=\binom{n+k}{k}-1$, 那么根据定理 8.6 (1), $C_{N,k}=(N+1)n-\binom{n+k}{k+1}=\binom{n+k}{k}n-\binom{n+k}{k+1}=\binom{n+k}{k}n-\frac{n}{k+1}\binom{n+k}{k}=\frac{kn}{k+1}\binom{n+k}{k}=\frac{kn}{k+1}(N+1)$
-2. 如果 $N=\binom{n+k-1}{k}$, 那么 $C_{N,k}>C_{N-1,k}=\frac{k(n-1)}{k+1}N$ 
-   如果 $\binom{n+k-1}{k}< N\leq\binom{n+k}{k}-1$, 那么根据定理 8.6 (2), $C_{N,k}=C_{N-1,k}+n\geq\frac{k(n-1)}{k+1}(N-1)+n\geq\frac{k}{k+1}(n-1)N$. 因此 $A_{N,k}\geq\frac{k}{k+1}(n-1)\geq\frac{1}{2}(n-1)$
+1. 如果 $N=\binom{n+k}{k}-1$, 那么根据定理 8.6 (1), $C_{N,k}=(N+1)n-\binom{n+k}{k+1}=\binom{n+k}{k}n-\binom{n+k}{k+1}=\binom{n+k}{k}n-\frac{n}{k+1}\binom{n+k}{k}=\frac{kn}{k+1}\binom{n+k}{k}=\frac{kn}{k+1}(N+1)$. 
+2. 如果 $N=\binom{n+k-1}{k}$, 那么 $C_{N,k}>C_{N-1,k}=\frac{k(n-1)}{k+1}N$ ; 
+   如果 $\binom{n+k-1}{k}< N\leq\binom{n+k}{k}-1$, 那么根据定理 8.6 (2), $C_{N,k}=C_{N-1,k}+n\geq\frac{k(n-1)}{k+1}(N-1)+n\geq\frac{k}{k+1}(n-1)N$. 因此 $A_{N,k}\geq\frac{k}{k+1}(n-1)\geq\frac{1}{2}(n-1)$. 
+
+
+
+二项式计数器: 
+
+​	我们已经知道了如何计算最小成本; 现在我们需要解决: 怎么通过一步一步操作, 来达到这个最小成本. 
+
+​	 (引理 8.14) 当对某个 $n\geq0$ 有 $N=\binom{n+k}{k}-1$ 时, 由引理 8.5 可知 $\sum_{i=1}^k\binom{n-i+1}{i}=\binom{n+k}{k}-1=N$, 因此 $\forall i\in[k],a_i=\binom{n-i+1}{i}$ 是一个最优的最终状态. 同时, 根据定理 8.6, 此时所有 $a_i$ 都取到上界, 不存在某个 $a_i$ 可以取更小的值. 因此该最终状态为唯一的最优最终状态. 根据引理 8.4, 要达到该状态, 所有中间状态也必须满足 $\forall i\in[j],a_i=\binom{n-i+1}{i}$, 因此要达到这一状态所需的操作序列也是唯一的. 
+​	所以, 当对某个 $n\geq0$ 有 $N=\binom{n+k}{k}-1$ 时, $(N,k)-$growth game 有唯一的最优操作序列. 
+
+​	$N=\binom{n+k}{k}-1$ 的这一最优解可以用一个二项式计数器表达, 伪码如下: 
+
+```pseudocode
+Initialize(k):
+	a₁, a₂, ..., aₖ ← 0
+	b₁, b₂, ..., bₖ ← 0
+	bₖ₊₁ ← ∞
+```
+
+```pseudocode
+Increment(k):
+	i ← min{j ∈ [k] | bⱼ < bⱼ₊₁}
+	aᵢ ← 1 + ∑(j=1..i)aⱼ
+	bᵢ ← bᵢ + 1
+	a₁, a₂, ..., aᵢ₋₁ ← 0
+	b₁, b₂, ..., bᵢ₋₁ ← 0
+```
+
+​	用 $(b_1,b_2,\dots,b_k)$ 维护一个计数器, 初始化全部为 0. 增长时, 找到最小的满足 $b_i<b_{i+1}$ 的下标 $i$ (形如 $b_1=b_2=\dots=b_i<b_{i+1}$), 将其加一, 并清空其前面的计数器项, 类似进位 (因为 $b_{k+1}$ 被初始化为 $\infty$, 所以总能找到满足条件的下标). 与此同时, 将 $A$ 的前 $i$ 个子数组合并到 $A_i$ 并插入新元素, 伪码中体现为 $a_i\leftarrow1+\sum_{j=1}^ia_j;a_1,a_2,\dots,a_{i-1}\leftarrow0$. 
+
+​	 (引理 8.15) 下面证明二进制计数器的正确性. 我们要证明在使用二进制计数器时, $\forall i\in[k],a_i=\binom{b_i+i-1}{i}$: 
+
+1. 初始状态下上式成立, 因为 $\forall i\in[k],0=\binom{0+i-1}{i}$. 
+2. 假设上式对当前 $(a_1,a_2,\dots,a_k)$ 和 $(b_1,b_2,\dots,b_k)$ 成立, 设 $b_1=b_2=\dots=b_i=n<b_{i+1}$. 
+   新值 $a_i'=1+\sum_{j=1}^ia_j,b_i'=b_i+1$. 
+   $a_i'=1+\sum_{j=1}^ia_j=1+\sum_{j=1}^i\binom{n+j-1}{j}=\sum_{j=0}^i\binom{n+j-1}{j}=\binom{n+i}{i}=\binom{b_i'+i-1}{i}$. 
+
+​	上式得证. 
+
+​	 (引理 8.16) 考虑以下时刻: $b_1=b_2=\dots=b_k=n$, 根据引理 8.15, 此时$N=\sum_{i=1}^ka_i=\sum_{i=1}^k\binom{n+i-1}{i}=\binom{n+k}{k}-1$, 根据引理 8.14, 二项式计数器达到该状态的过程是 $(N,k)-$growth game 的唯一最优解. 
+
+ 
+
+Growth game 扩展规则: 
+
+​	前面的 growth game 要求, 合并子数组时必须把从 $A_1$ 开始的所有子数组合并, 即对某个 $i\in[k],(a_1,a_2,\dots,a_k)\rightarrow(0,\dots,0,1+\sum_{l=1}^ia_l,a_{i+1},\dots,a_k)$. 如果放宽这一限制, 采用更灵活的合并方式, 能否取得更低的成本? 
+
+1. 允许合并中间的连续子数组, 即对于 $1\leq i<j\leq k,(a_1,a_2,\dots,a_k)\rightarrow(0,\dots,0,a_1,\dots,a_{i-1},\sum_{l=i}^ja_l,a_{j+1},\dots,a_k)$, 也就是将 $A_i,A_{i+1},\dots,A_j$ 合并为新的 $A_j$, 并把前面的非空数组重新编号来补上合并后的空位. (注意在这一过程中没有加入新元素.)
+   该操作的成本是 $\sum_{l=i}^ja_l$ . 
+   记 $(a_1,a_2,\dots,a_k)$ 为 $\mathbf{a}$
+   记 $(0,\dots,0,a_1,\dots,a_{i-1},\sum_{l=i}^ja_l,a_{j+1},\dots,a_k)$ 为 $\mathbf{a}'$
+     (引理 8.17) 使用原规则, 要达到状态 $\mathbf{a}'$, 所需最小成本为 $C_k(\mathbf{a}')$; 先使用原规则到达状态 $\mathbf{a}$, 然后通过前述操作到达 $\mathbf{a}'$ 所需的最小成本为 $C_k(\mathbf{a})+\sum_{l=i}^ja_l$. 
+
+   $C_j(a_1,a_2,\dots,a_j)+C_k(0,\dots,0,a_{j+1},\dots,a_k)=\sum_{l=1}^jC_l(0,\dots,0,a_l)+\sum_{l=j+1}^kC_l(0,\dots,0,a_l)=\sum_{l=1}^kC_l(0,\dots,0,a_l)=C_k(a_1,\dots,a_k)$. 
+
+   记 $S=C_k(0,\dots,0,a_{j+1},\dots,a_k)$
+   因此
+   $\begin{align}C_k(\mathbf{a}')&=C_j(0,\dots,0,a_1,a_2,\dots,a_{i-1},\sum_{l=i}^ja_l)+S\\&=C_{j-1}(0,\dots,0,a_1,a_2,\dots,a_{i-1})+C_j(0,\dots,0,\sum_{l=i}^ja_l)+S\\&\leq C_{j-1}(0,\dots,0,a_1,a_2,\dots,a_{i-1})+C_j(0,\dots,0,a_i,a_{i+1},\dots,a_j-1)+\sum_{l=i}^ja_l+S\\&\leq C_{j-1}(0,\dots,0,a_1,a_2,\dots,a_{i-1})+C_j(0,\dots,0,a_i,a_{i+1},\dots,a_j)+\sum_{l=i}^ja_l+S\\&\leq C_{i-1}(a_1,a_2,\dots,a_{i-1})+C_j(0,\dots,0,a_i,a_{i+1},\dots,a_j)+\sum_{l=i}^ja_l+S\\&=C_j(a_1,a_2,\dots,a_j)+\sum_{l=i}^ja_l+S\\&=C_j(\mathbf{a})+\sum_{l=i}^ja_l\end{align}$
+
+   综上前述的新操作对降低最小成本没有帮助. 
+
+2. 允许合并任意一组块. 取一个下标集合 $I=\{i_1,i_2,\dots,i_r\}\subseteq[k]$, 其中 $i_1<i_2<\dots<i_r$, 然后将 $A_{i_1},A_{i_2},\dots,A_{i_r}$ 合并到 $A_{i_r}$ 并加入新元素, 也就是 $a_{i_r}\leftarrow1+\sum_{l=1}^ra_{i_l}$, 对所有 $l\in[r-1],a_{i_l}\leftarrow0$. 将这种操作称为一个 I-move. 证明过程和引理 8.17 一致, I-move 对降低最小成本也没有帮助. 
+
+
+
+现在, 给定 $N,k,l$ 的情况下, 我们可以得到 growth game 的最优解法. 接下来, 我们需要将实际数据结构映射到到 growth game 中, 这样一来我们就可以完成对动态数组的下界的证明. 
