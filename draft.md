@@ -1,3 +1,17 @@
+标准数据结构: 
+
+​	如果一个 $(s(N),t(N))-$实现满足以下条件, 那么称其为一个标准数据结构: 
+
+1. 当数据结构申请一个新内存块时, 首先选择若干已有块 $A_1,A_2,\dots,A_k$, 然后按顺序复制到新数据块中: 
+   1. 把  $A_1$ 的元素复制到新内存块中; 
+   2. 释放 $A_1$; 
+   3. 把  $A_2$ 的元素复制到新内存块中; 
+   4. 释放 $A_2$; 
+   5. ……
+2. 复制完成后, 临时空间马上小时. 也就是说, $t(N)$ 的临时空间只在分配新块和复制元素时短暂使用. 
+
+
+
 Growth game: 
 
 ​	为了能够证明标准实现 grow 操作摊还成本的下界, 论文第 8 章提出了一个 growth game, 具体定义如下: 
@@ -75,7 +89,7 @@ $l=0$ 情况的分析:
 
 
 
-定理 8.6 的证明: 
+$C_{N,k}$ 的计算: 
 
 ​	论文在定理 8.6 中给出了关于 $C_{N,k}$ 的以下命题: 
 
@@ -205,4 +219,45 @@ Growth game 扩展规则:
 
 
 
-现在, 给定 $N,k,l$ 的情况下, 我们可以得到 growth game 的最优解法. 接下来, 我们需要将实际数据结构映射到到 growth game 中, 这样一来我们就可以完成对动态数组的下界的证明. 
+下界分析: 
+
+​	现在, 给定 $N,k,l$ 的情况下, 我们可以得到 growth game 的最优解法. 
+
+​	假设 $r=O(\log N)$, 且一个标准实现的可变长数组可用的额外空间为 $O(rN^{1/r})$. 令额外空间为 $rN^{1/r}$ , 忽略常数, 因为对于任意 $\alpha>1$, 在 $N$ 足够大时都有 $\alpha rN^{1/r}<(r-1)N^{1/(r-1)}$. 因为 growth game 使用的额外空间为 $k+l$, 所以 $k\leq rN^{1/r},l\leq rN^{1/r}$, 放宽下界, 取 $k=l=rN^{1/r}$. 对这个可变长数组的任何操作都被扩展的 $(N,rN^{1/r},rN^{1/r})-$growth game 中的操作覆盖了, 这意味着真实数据结构的最小成本不会低于对应的, 条件更宽松的 growth game 的最小成本. 
+
+​	引理 8.2 已经证明了 $l>0$ 的 growth game 可以规约为 $l=0$ 的 growth game 而保持最小摊还成本不变. 在当前情况下, 对应的 $l=0$ 的 growth game 是 $(\frac{N}{rN^{1/r}+1},rN^{1/r},0)-$growth game. 在 $N$ 足够大时常数 $1$ 可以忽略, 不会影响渐近结果, 因此可以改写为 $(\frac{1}{r}N^{1-1/r},rN^{1/r})-$growth game. 
+
+​	根据推论 8.13, 我们需要找到一个 $n$, 满足 $\binom{n+rN^{1/r}}{n}<\frac{1}{r}N^{1-1/r}$, 此时有摊还成本 $A_{N,rN^{1/r},rN^{1/r}}=A_{\frac{1}{r}N^{1-1/r},rN^{1/r}}\geq\frac{1}{2}n$. 只要能证明有 $n=\Theta(r)$, 就可以得到摊还成本下界 $A_{N,rN^{1/r},rN^{1/r}}\geq\frac{n}{2}=\Omega(r)$. 
+
+​	把 $n=\Theta(r)$ 写成 $n=\beta r$, 其中 $\beta>0$ 是一个常数. 应用不等式 $\binom{n}{k}\leq(\frac{en}{k})^k$ 可得: $\binom{n+rN^{1/r}}{n}=\binom{\beta r+rN^{1/r}}{\beta r}\leq\binom{(\beta+1)r+rN^{1/r}}{\beta r}\leq(\frac{e(\beta+1)N^{1/r}}{\beta})^{\beta r}=(\frac{e(\beta+1)}{\beta})^{\beta r}N^\beta$. 我们需要证明 $(\frac{e(\beta+1)}{\beta})^{\beta r}N^\beta<\frac{1}{r}N^{1-1/r}$
+
+​	把 $r=O(\log N)$ 写成 $r\leq C\log N$, $C$ 为常数. 
+
+​	要证 $(\frac{e(\beta+1)}{\beta})^{\beta r}N^\beta<\frac{1}{r}N^{1-1/r}$, 
+​	即证 $\log((\frac{e(\beta+1)}{\beta})^{\beta r}N^\beta)<\log(\frac{1}{r}N^{1-1/r})$, 
+​	即证 $\beta r\log(\frac{e(\beta+1)}{\beta})+\beta\log N<(1-\frac{1}{r})\log N-\log r$, 
+​	即证 $\beta\frac{r}{\log N}\log(\frac{e(\beta+1)}{\beta})+\beta<1-\frac{1}{r}-\frac{\log r}{\log N}$. 
+
+​	当 $\beta\rightarrow0^+$ 时, $\beta\frac{r}{\log N}\log(\frac{e(\beta+1)}{\beta})+\beta\leq\beta C\log(\frac{e(\beta+1)}{\beta})+\beta\rightarrow0$, 因此总能取到一个足够小的 $\beta$, 使 $(\frac{e(\beta+1)}{\beta})^{\beta r}N^\beta<\frac{1}{2}$; 
+​	另一方面, 当 $r\geq3$ 且 $N$ 足够大时, 因为 $r=O(\log N)$, 所以 $\frac{\log r}{\log N}\rightarrow0$, 又 $1-\frac{1}{r}\geq\frac{2}{3}$, 因此有 $1-\frac{1}{r}-\frac{\log r}{\log N}>\frac{1}{2}$. 
+​	综上, 总能取到合适的 $\beta$ 使得 $\beta\frac{r}{\log N}\log(\frac{e(\beta+1)}{\beta})+\beta<1-\frac{1}{r}-\frac{\log r}{\log N}$ 成立, 即总能取到合适的 $\beta$ 使得 $A_{N,rN^{1/r},rN^{1/r}}=\Omega(r)$ 成立. 
+
+​	结合第 6 章的结论. 第 6 章所构造的实现, 有增长摊还成本 $O(r)$. 合并上下界, 有增长摊还成本 $\Theta(r)$. 显然这个实现达到了渐近最优. 
+
+
+
+结语: 
+
+​	论文提出了一类可变长数组的实现, 在以下方面实现了最优权衡: 
+
+- 存储数组所需的空间
+- 调整数组大小时临时所需的空间
+- 扩展和收缩操作的摊还成本
+
+​	于此同时, 这些实现仍然保证访问操作的最坏情况成本为 $O(1)$. 
+
+​	扩展操作的摊还成本下界目前只适用与文中提出的标准算法 (即申请新内存块后, 把若干旧块里的元素按顺序复制到新块中, 然后释放旧块的算法), 但作者相信在元素和指针不可压缩的假设下, 这些下界可以推广到所有算法. 
+
+​	本文为了得到扩展操作摊还成本的下界, 定义了 growth game, 并进行了精确求解. 不过这一求解过程较为复杂, 作者认为是否存在一种更简单的求解方法是一个值得研究的问题. 
+
+​	作者认为本文的方法还可以用于改进 3.4 节描述的模型, 这是未来的研究项目. 
