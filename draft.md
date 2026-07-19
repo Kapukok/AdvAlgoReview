@@ -104,22 +104,26 @@
 
 ​	 (命题 8.11) 考虑对某个 $n\geq1$ 有 $\binom{n+k-1}{k}-1\leq N<\binom{n+k}{k}-1$, 取 $\mathbf{a}\in P_{N,k}$, 那么: 
 
-1. 假设 $\forall j\in[k],a_j\leq\binom{n+j-2}{j}$, 则
+1. 如果 $\exists i\in[k]$ 使得 $a_i<\binom{n+i-2}{i}$, 假设 $\forall j\in[k],a_j\leq\binom{n+j-2}{j}$, 则
    $N=\sum_{j=1}^ka_j<\sum_{j=1}^k\binom{n+j-2}{j}=\sum_{j=0}^k\binom{(n-1)+j-1}{j}-1=\binom{n+k-1}{k}-1$ (引理 8.5), 
    与 $N\geq\binom{n+k-1}{k}-1$ 矛盾. 
    因此假设不成立, 如果 $\exists i\in[k]$ 使得 $a_i<\binom{n+i-2}{i}$, 那么一定 $\exists j\in[k]$ 使得 $a_j>\binom{n+j-2}{j}$. 
-2. 类似地, 假设 $\forall i\in[k],a_i\geq\binom{n+i-1}{i}$, 则
+2. 类似地, 如果 $\exists j\in[k]$ 使得 $a_j>\binom{n+j-1}{j}$, 假设 $\forall i\in[k],a_i\geq\binom{n+i-1}{i}$, 则
    $N=\sum_{i=1}^ka_i>\sum_{i=1}^k\binom{n+i-1}{i}=\sum_{i=0}^k\binom{n+i-1}{i}-1=\binom{n+k}{k}-1$ (引理 8.5), 
    与 $N\leq\binom{n+k}{k}-1$ 矛盾. 
    因此假设不成立, 如果 $\exists j\in[k]$ 使得 $a_j>\binom{n+j-1}{j}$, 那么一定 $\exists i\in[k]$ 使得 $a_i<\binom{n+i-1}{i}$. 
 
 ​	 (命题 8.12) 假设定理 8.6 (2) 对所有满足 $N'<N$ 且 $k'\leq k$ 的 $(N',k')$ 都成立, 并且对某个 $n\geq1$ 有 $\binom{n+k-1}{k}-1\leq N\leq\binom{n+k}{k}-1$, 取 $\mathbf{a}\in P_{N,k}$, 但不满足 $\forall i\in[k],\binom{n+i-2}{i}\leq a_i\leq\binom{n+i-1}{i}$: 
 
-1. 如果 $\exists i\in[k]$ 使得 $a_i<\binom{n+i-2}{i}$, 根据命题 8.11 (1),  $\exists j\in[k]$ 使得 $a_j>\binom{n+j-2}{j}$. 取 $\mathbf{b}=(b_1,b_2,\dots,b_k)\in P_{N,k}$, 其中 $b_i=a_i+1,b_j=a_j-1,\forall l\in[k]\backslash\{i,j\}$. 根据定理 8.6 (2), 有$C_{a_i,i}-C_{a_i-1,i}\leq n-2$ 且 $C_{a_j-1,j}-C_{a_j-2,j}\geq n-1$. 因此
-   
+1. 如果 $\exists i\in[k]$ 使得 $a_i<\binom{n+i-2}{i}$, 根据命题 8.11 (1),  $\exists j\in[k]$ 使得 $a_j>\binom{n+j-2}{j}$. 取 $\mathbf{b}=(b_1,b_2,\dots,b_k)\in P_{N,k}$, 其中 $b_i=a_i+1,b_j=a_j-1,\forall l\in[k]\backslash\{i,j\}, a_l=b_l$. 
+   取 $n_i$ 满足 $\binom{n_i+i-1}{i}\leq a_i<\binom{n_i+i}{i}$, 根据定理 8.6 (2), $C_{a_i,i}-C_{a_i-1,i}=n_i$. 假设 $n_i>n-1$, 则 $a_i\geq\binom{n_i+i-1}{i}\geq\binom{n+i-2}{i}$, 与 $a_i<\binom{n+i-2}{i}$ 矛盾, 因此假设不成立, 因此 $C_{a_i,i}-C_{a_i-1,i}=n_i\leq n-2$.
+   另一方面, 由于 $a_j>\binom{n+j-2}{j}$, 所以 $a_j-1\geq\binom{n+j-2}{j}$. 取 $n_j$ 满足 $\binom{n_j+j-1}{j}\leq a_j-1<\binom{n_j+j}{j}$, 根据定理 8.6 (2), $C_{a_j-1,j}-C_{a_j-2,j}=n_j$. 假设 $n_j\leq n-2$, 则 $a_j-1<\binom{n_j+j}{j}\leq\binom{n+j-2}{j}$, 与 $a_j-1\geq\binom{n+j-2}{j}$ 矛盾, 因此假设不成立, 因此 $C_{a_j-1,j}-C_{a_j-2,j}=n_j\geq n-1$. 于是: 
+
    $\begin{align}C(\mathbf{b})-C(\mathbf{a})&=N+\sum_{l:b_l>0}C_{b_l-1,l}-N-\sum_{l:a_l>0}C_{a_l-1,l} (引理 8.4)\\&=C_{b_i-1,i}+C_{b_j-1,j}-C_{a_i-1,i}-C_{a_j-1,j}\\&=C_{a_i,i}+C_{a_j-2,j}-C_{a_i-1,i}-C_{a_j-1,j}\\&=(C_{a_i,i}-C_{a_i-1,i})-(C_{a_j-1,j}-C_{a_j-2,j})\\&<0\end{align}$
-2. 如果 $\exists j\in[k]$ 使得 $a_j<\binom{n+j-1}{j}$, 根据命题 8.11 (1),  $\exists i\in[k]$ 使得 $a_i>\binom{n+i-1}{i}$. 取 $\mathbf{b}=(b_1,b_2,\dots,b_k)\in P_{N,k}$, 其中 $b_i=a_i+1,b_j=a_j-1,\forall l\in[k]\backslash\{i,j\}$. 根据定理 8.6 (2), 有$C_{a_i,i}-C_{a_i-1,i}\leq n-1$ 且 $C_{a_j-1,j}-C_{a_j-2,j}\geq n$. 因此
-   
+
+2. 如果 $\exists j\in[k]$ 使得 $a_j>\binom{n+j-1}{j}$, 根据命题 8.11 (1),  $\exists i\in[k]$ 使得 $a_i<\binom{n+i-1}{i}$. 取 $\mathbf{b}=(b_1,b_2,\dots,b_k)\in P_{N,k}$, 其中 $b_i=a_i+1,b_j=a_j-1,\forall l\in[k]\backslash\{i,j\}, a_l=b_l$. 取 $n_i$ 满足 $\binom{n_i+i-1}{i}\leq a_i<\binom{n_i+i}{i}$, 根据定理 8.6 (2), $C_{a_i,i}-C_{a_i-1,i}=n_i$. 假设 $n_i\geq n$, 则 $a_i\geq\binom{n_i+i-1}{i}\geq\binom{n+i-1}{i}$, 与 $a_i<\binom{n+i-2}{i}$ 矛盾, 因此假设不成立, 因此 $C_{a_i,i}-C_{a_i-1,i}=n_i\leq n-1$.
+   另一方面, 由于 $a_j>\binom{n+j-1}{j}$, 所以 $a_j-1\geq\binom{n+j-1}{j}$. 取 $n_j$ 满足 $\binom{n_j+j-1}{j}\leq a_j-1<\binom{n_j+j}{j}$, 根据定理 8.6 (2), $C_{a_j-1,j}-C_{a_j-2,j}=n_j$. 假设 $n_j\leq n-1$, 则 $a_j-1<\binom{n_j+j}{j}\leq\binom{n+j-1}{j}$, 与 $a_j-1\geq\binom{n+j-1}{j}$ 矛盾, 因此假设不成立, 因此 $C_{a_j-1,j}$. 于是: 
+
    $\begin{align}C(\mathbf{b})-C(\mathbf{a})&=N+\sum_{l:b_l>0}C_{b_l-1,l}-N-\sum_{l:a_l>0}C_{a_l-1,l}(引理 8.4)\\&=C_{b_i-1,i}+C_{b_j-1,j}-C_{a_i-1,i}-C_{a_j-1,j}\\&=C_{a_i,i}+C_{a_j-2,j}-C_{a_i-1,i}-C_{a_j-1,j}\\&=(C_{a_i,i}-C_{a_i-1,i})-(C_{a_j-1,j}-C_{a_j-2,j})\\&<0\end{align}$
 
 ​	因此如果定理 8.6 (2) 对所有满足 $N'<N$ 且 $k'\leq k$ 的 $(N',k')$ 都成立, 并且对某个 $n\geq1$ 有 $\binom{n+k-1}{k}-1\leq N\leq\binom{n+k}{k}-1$, 取 $\mathbf{a}\in P_{N,k}$, 但不满足 $\forall i\in[k],\binom{n+i-2}{i}\leq a_i\leq\binom{n+i-1}{i}$, 那么一定存在 $\mathbf{b}$ 满足 $C(\mathbf{a})>C(\mathbf{b})$, 所以$C(\mathbf{a})>C_{N,k}$, 即 $\mathbf{a}$ 一定不是一个最优的最终状态. 
@@ -203,7 +207,7 @@ Increment(k):
 
    记 $S=C_k(0,\dots,0,a_{j+1},\dots,a_k)$
    因此
-   $\begin{align}C_k(\mathbf{a}')&=C_j(0,\dots,0,a_1,a_2,\dots,a_{i-1},\sum_{l=i}^ja_l)+S\\&=C_{j-1}(0,\dots,0,a_1,a_2,\dots,a_{i-1})+C_j(0,\dots,0,\sum_{l=i}^ja_l)+S\\&\leq C_{j-1}(0,\dots,0,a_1,a_2,\dots,a_{i-1})+C_j(0,\dots,0,a_i,a_{i+1},\dots,a_j-1)+\sum_{l=i}^ja_l+S\\&\leq C_{j-1}(0,\dots,0,a_1,a_2,\dots,a_{i-1})+C_j(0,\dots,0,a_i,a_{i+1},\dots,a_j)+\sum_{l=i}^ja_l+S\\&\leq C_{i-1}(a_1,a_2,\dots,a_{i-1})+C_j(0,\dots,0,a_i,a_{i+1},\dots,a_j)+\sum_{l=i}^ja_l+S\\&=C_j(a_1,a_2,\dots,a_j)+\sum_{l=i}^ja_l+S\\&=C_j(\mathbf{a})+\sum_{l=i}^ja_l\end{align}$
+   $\begin{align}C_k(\mathbf{a}')&=C_j(0,\dots,0,a_1,a_2,\dots,a_{i-1},\sum_{l=i}^ja_l)+S\\&=C_{j-1}(0,\dots,0,a_1,a_2,\dots,a_{i-1})+C_j(0,\dots,0,\sum_{l=i}^ja_l)+S\\&\leq C_{j-1}(0,\dots,0,a_1,a_2,\dots,a_{i-1})+C_j(0,\dots,0,a_i,a_{i+1},\dots,a_j-1)+\sum_{l=i}^ja_l+S\\&\leq C_{j-1}(0,\dots,0,a_1,a_2,\dots,a_{i-1})+C_j(0,\dots,0,a_i,a_{i+1},\dots,a_j)+\sum_{l=i}^ja_l+S\\&\leq C_{i-1}(a_1,a_2,\dots,a_{i-1})+C_j(0,\dots,0,a_i,a_{i+1},\dots,a_j)+\sum_{l=i}^ja_l+S\\&=C_j(a_1,a_2,\dots,a_j)+\sum_{l=i}^ja_l+S\\&=C_k(\mathbf{a})+\sum_{l=i}^ja_l\end{align}$
 
    综上前述的新操作对降低最小成本没有帮助. 
 
@@ -230,7 +234,7 @@ Increment(k):
 ​	即证 $\beta r\log(\frac{e(\beta+1)}{\beta})+\beta\log N<(1-\frac{1}{r})\log N-\log r$, 
 ​	即证 $\beta\frac{r}{\log N}\log(\frac{e(\beta+1)}{\beta})+\beta<1-\frac{1}{r}-\frac{\log r}{\log N}$. 
 
-​	当 $\beta\rightarrow0^+$ 时, $\beta\frac{r}{\log N}\log(\frac{e(\beta+1)}{\beta})+\beta\leq\beta C\log(\frac{e(\beta+1)}{\beta})+\beta\rightarrow0$, 因此总能取到一个足够小的 $\beta$, 使 $(\frac{e(\beta+1)}{\beta})^{\beta r}N^\beta<\frac{1}{2}$; 
+​	当 $\beta\rightarrow0^+$ 时, $\beta\frac{r}{\log N}\log(\frac{e(\beta+1)}{\beta})+\beta\leq\beta C\log(\frac{e(\beta+1)}{\beta})+\beta\rightarrow0$, 因此总能取到一个足够小的 $\beta$, 使 $\beta\frac{r}{\log N}\log(\frac{e(\beta+1)}{\beta})+\beta<\frac{1}{2}$; 
 ​	另一方面, 当 $r\geq3$ 且 $N$ 足够大时, 因为 $r=O(\log N)$, 所以 $\frac{\log r}{\log N}\rightarrow0$, 又 $1-\frac{1}{r}\geq\frac{2}{3}$, 因此有 $1-\frac{1}{r}-\frac{\log r}{\log N}>\frac{1}{2}$. 
 ​	综上, 总能取到合适的 $\beta$ 使得 $\beta\frac{r}{\log N}\log(\frac{e(\beta+1)}{\beta})+\beta<1-\frac{1}{r}-\frac{\log r}{\log N}$ 成立, 即总能取到合适的 $\beta$ 使得 $A_{N,rN^{1/r},rN^{1/r}}=\Omega(r)$ 成立. 
 
