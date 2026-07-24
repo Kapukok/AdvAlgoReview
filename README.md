@@ -12,6 +12,21 @@ Tarjan R E, Zwick U. *Optimal Resizable Arrays*. SIAM Journal on Computing, 2024
 
 杨开云：growth game、时间下界、最优性、局限、现实意义与结论；审查熊杺负责部分
 
+## 成员与 Git 身份对应
+
+版本历史中出现的提交者名称包含中文名、拼音与网名等多种形式，其与小组成员的对应关系如下。丁彦文与杨开云各有两个提交身份。
+
+| 成员 | 提交者名称 | 提交邮箱 | 个人分支 |
+| --- | --- | --- | --- |
+| 丁彦文 | `丁彦文` | `dingyanwen@dingyanwendeMac-mini.local` | `DingYanwen` |
+| 丁彦文 | `dInG-yAnWen` | `dingyanw@outlook.com` | `DingYanwen` |
+| 杨开云 | `杨开云` | `16468067+kaiyun-yang@user.noreply.gitee.com` | `yang-kaiyun-note` |
+| 杨开云 | `Kaiyun Yang` | `kaiyun_yang@smail.nju.edu.cn` | `yang-kaiyun-note` |
+| 刘畅 | `changchanggod` | `241880626@smail.nju.edu.cn` | `CCG` |
+| 熊杺 | `Lacrym1ra` | `3772218734@qq.com` | `feature/Lacry` |
+
+各成员先在个人分支上提交，再合并到 `FullVersion` 分支汇总成稿。
+
 ## 文件目录
 
 ### 根目录
@@ -46,7 +61,7 @@ Tarjan R E, Zwick U. *Optimal Resizable Arrays*. SIAM Journal on Computing, 2024
 | `section6.md` | 负责部分的草稿之一，冗余 B 进制计数器结构、Grow/Shrink/Combine/Split、Rebuild 阈值、空间账、记账法摊还分析与最坏 O(1) 访问，对应成稿 §9 |
 | `section7.md` | 负责部分的草稿之二，标准实现定义与分块变换，对应成稿 §10 |
 | `丁彦文阅读记录/reading notes page *.pdf` | 三次阅读的手写批注扫描件，按原文页码分段 |
-| `丁彦文阅读记录/AI使用记录.md` | AI 使用记录，含 8 处理解性提问与 4 处原文笔误的核对过程 |
+| `丁彦文阅读记录/AI使用记录.md` | 阅读过程中的 AI 使用记录，与上述三次阅读的手写批注对应，含 8 处理解性提问与 4 处原文笔误的核对过程 |
 | `资料/` | 为 §9.6 摊还分析、§9.7 常数时间访问查找的截图与原文，`msb资料索引.md` 为索引 |
 | `assets/` | 上述两节草稿引用的插图源文件 |
 
