@@ -1783,7 +1783,7 @@ $$
 
 **原文命题 8.8。** 当 $n=1$，即 $0\leq N\leq k$ 时，$C_{N,k}=N$，并且 $\forall\mathbf{a}\in P_{N,k}$，$C(\mathbf{a})=N$ 当且仅当 $\forall i\in[k],0\leq a_i\leq1$。
 
-**原文命题 8.9。** 假设原文定理 8.6 (1) 对 $(N,k)$ 和 $(N-1,k)$ 都成立，那么：如果对某个 $n\geq1$ 有 $\binom{n+k-1}{k}\leq N<\binom{n+k}{k}$，显然 $\binom{n+k-1}{k}-1<N\leq\binom{n+k}{k}-1$ 且 $\binom{n+k-1}{k}-1\leq N-1<\binom{n+k}{k}-1$。应用原文定理 8.6 (1），可得 $C_{N,k}-C_{N-1,k}=((N+1)n-\binom{n+k}{k+1})-(Nn-\binom{n+k}{k+1})=n$。也就是说，当原文定理 8.6 (1) 对 $(N,k)$ 和 $(N-1,k)$ 都成立时，原文定理 8.6 (2) 对 $(N,k)$ 成立。
+**原文命题 8.9。** 假设原文定理 8.6 (1) 对 $(N,k)$ 和 $(N-1,k)$ 都成立，那么：如果对某个 $n\geq1$ 有 $\binom{n+k-1}{k}\leq N<\binom{n+k}{k}$，显然 $\binom{n+k-1}{k}-1<N\leq\binom{n+k}{k}-1$ 且 $\binom{n+k-1}{k}-1\leq N-1<\binom{n+k}{k}-1$。应用原文定理 8.6 (1)，可得 $C_{N,k}-C_{N-1,k}=((N+1)n-\binom{n+k}{k+1})-(Nn-\binom{n+k}{k+1})=n$。也就是说，当原文定理 8.6 (1) 对 $(N,k)$ 和 $(N-1,k)$ 都成立时，原文定理 8.6 (2) 对 $(N,k)$ 成立。
 
 **原文命题 8.10。** 假设原文定理 8.6 (1) 对所有满足 $N'<N$ 且 $k'\leq k$ 的 $(N',k')$ 都成立，那么取 $\mathbf{a}\in P_{N,k}$ 满足 $\forall i\in[k],\binom{n+i-2}{i}\leq a_i\leq\binom{n+i-1}{i}$，则
 
@@ -1794,24 +1794,24 @@ $\begin{align}C(a)&=N+\sum_{i=1}^kC_{a_i-1,i} (原文引理 8.4) \\&=N+\sum_{i=1
 **原文命题 8.11。** 考虑对某个 $n\geq1$ 有 $\binom{n+k-1}{k}-1\leq N<\binom{n+k}{k}-1$，取 $\mathbf{a}\in P_{N,k}$，那么：
 
 1. 如果 $\exists i\in[k]$ 使得 $a_i<\binom{n+i-2}{i}$，假设 $\forall j\in[k],a_j\leq\binom{n+j-2}{j}$，则
-   $N=\sum_{j=1}^ka_j<\sum_{j=1}^k\binom{n+j-2}{j}=\sum_{j=0}^k\binom{(n-1)+j-1}{j}-1=\binom{n+k-1}{k}-1$ (原文引理 8.5），
+   $N=\sum_{j=1}^ka_j<\sum_{j=1}^k\binom{n+j-2}{j}=\sum_{j=0}^k\binom{(n-1)+j-1}{j}-1=\binom{n+k-1}{k}-1$ (原文引理 8.5)，
    与 $N\geq\binom{n+k-1}{k}-1$ 矛盾。
    因此假设不成立，如果 $\exists i\in[k]$ 使得 $a_i<\binom{n+i-2}{i}$，那么一定 $\exists j\in[k]$ 使得 $a_j>\binom{n+j-2}{j}$。
 2. 类似地，如果 $\exists j\in[k]$ 使得 $a_j>\binom{n+j-1}{j}$，假设 $\forall i\in[k],a_i\geq\binom{n+i-1}{i}$，则
-   $N=\sum_{i=1}^ka_i>\sum_{i=1}^k\binom{n+i-1}{i}=\sum_{i=0}^k\binom{n+i-1}{i}-1=\binom{n+k}{k}-1$ (原文引理 8.5），
+   $N=\sum_{i=1}^ka_i>\sum_{i=1}^k\binom{n+i-1}{i}=\sum_{i=0}^k\binom{n+i-1}{i}-1=\binom{n+k}{k}-1$ (原文引理 8.5)，
    与 $N\leq\binom{n+k}{k}-1$ 矛盾。
    因此假设不成立，如果 $\exists j\in[k]$ 使得 $a_j>\binom{n+j-1}{j}$，那么一定 $\exists i\in[k]$ 使得 $a_i<\binom{n+i-1}{i}$。
 
 **原文命题 8.12。** 假设原文定理 8.6 (2) 对所有满足 $N'<N$ 且 $k'\leq k$ 的 $(N',k')$ 都成立，并且对某个 $n\geq1$ 有 $\binom{n+k-1}{k}-1\leq N<\binom{n+k}{k}-1$，取 $\mathbf{a}\in P_{N,k}$，但不满足 $\forall i\in[k],\binom{n+i-2}{i}\leq a_i\leq\binom{n+i-1}{i}$：
 
-1. 如果 $\exists i\in[k]$ 使得 $a_i<\binom{n+i-2}{i}$，根据原文命题 8.11 (1）， $\exists j\in[k]$ 使得 $a_j>\binom{n+j-2}{j}$。取 $\mathbf{b}=(b_1,b_2,\dots,b_k)\in P_{N,k}$，其中 $b_i=a_i+1,b_j=a_j-1,\forall l\in[k]\backslash\{i,j\},a_l=b_l$。
-   取 $n_i$ 满足 $\binom{n_i+i-1}{i}\leq a_i<\binom{n_i+i}{i}$，根据原文定理 8.6 (2），$C_{a_i,i}-C_{a_i-1,i}=n_i$。假设 $n_i>n-1$，则 $a_i\geq\binom{n_i+i-1}{i}\geq\binom{n+i-2}{i}$，与 $a_i<\binom{n+i-2}{i}$ 矛盾，因此假设不成立，因此 $C_{a_i,i}-C_{a_i-1,i}=n_i\leq n-2$。
-   另一方面，由于 $a_j>\binom{n+j-2}{j}$，所以 $a_j-1\geq\binom{n+j-2}{j}$。取 $n_j$ 满足 $\binom{n_j+j-1}{j}\leq a_j-1<\binom{n_j+j}{j}$，根据原文定理 8.6 (2），$C_{a_j-1,j}-C_{a_j-2,j}=n_j$。假设 $n_j\leq n-2$，则 $a_j-1<\binom{n_j+j}{j}\leq\binom{n+j-2}{j}$，与 $a_j-1\geq\binom{n+j-2}{j}$ 矛盾，因此假设不成立，因此 $C_{a_j-1,j}-C_{a_j-2,j}=n_j\geq n-1$。于是：
+1. 如果 $\exists i\in[k]$ 使得 $a_i<\binom{n+i-2}{i}$，根据原文命题 8.11 (1)， $\exists j\in[k]$ 使得 $a_j>\binom{n+j-2}{j}$。取 $\mathbf{b}=(b_1,b_2,\dots,b_k)\in P_{N,k}$，其中 $b_i=a_i+1,b_j=a_j-1,\forall l\in[k]\backslash\{i,j\},a_l=b_l$。
+   取 $n_i$ 满足 $\binom{n_i+i-1}{i}\leq a_i<\binom{n_i+i}{i}$，根据原文定理 8.6 (2)，$C_{a_i,i}-C_{a_i-1,i}=n_i$。假设 $n_i>n-1$，则 $a_i\geq\binom{n_i+i-1}{i}\geq\binom{n+i-2}{i}$，与 $a_i<\binom{n+i-2}{i}$ 矛盾，因此假设不成立，因此 $C_{a_i,i}-C_{a_i-1,i}=n_i\leq n-2$。
+   另一方面，由于 $a_j>\binom{n+j-2}{j}$，所以 $a_j-1\geq\binom{n+j-2}{j}$。取 $n_j$ 满足 $\binom{n_j+j-1}{j}\leq a_j-1<\binom{n_j+j}{j}$，根据原文定理 8.6 (2)，$C_{a_j-1,j}-C_{a_j-2,j}=n_j$。假设 $n_j\leq n-2$，则 $a_j-1<\binom{n_j+j}{j}\leq\binom{n+j-2}{j}$，与 $a_j-1\geq\binom{n+j-2}{j}$ 矛盾，因此假设不成立，因此 $C_{a_j-1,j}-C_{a_j-2,j}=n_j\geq n-1$。于是：
 
    $\begin{align}C(\mathbf{b})-C(\mathbf{a})&=N+\sum_{l:b_l>0}C_{b_l-1,l}-N-\sum_{l:a_l>0}C_{a_l-1,l} (原文引理 8.4)\\&=C_{b_i-1,i}+C_{b_j-1,j}-C_{a_i-1,i}-C_{a_j-1,j}\\&=C_{a_i,i}+C_{a_j-2,j}-C_{a_i-1,i}-C_{a_j-1,j}\\&=(C_{a_i,i}-C_{a_i-1,i})-(C_{a_j-1,j}-C_{a_j-2,j})\\&<0\end{align}$
 
-2. 如果 $\exists j\in[k]$ 使得 $a_j>\binom{n+j-1}{j}$，根据原文命题 8.11 (2）， $\exists i\in[k]$ 使得 $a_i<\binom{n+i-1}{i}$。取 $\mathbf{b}=(b_1,b_2,\dots,b_k)\in P_{N,k}$，其中 $b_i=a_i+1,b_j=a_j-1,\forall l\in[k]\backslash\{i,j\},a_l=b_l$。取 $n_i$ 满足 $\binom{n_i+i-1}{i}\leq a_i<\binom{n_i+i}{i}$，根据原文定理 8.6 (2），$C_{a_i,i}-C_{a_i-1,i}=n_i$。假设 $n_i\geq n$，则 $a_i\geq\binom{n_i+i-1}{i}\geq\binom{n+i-1}{i}$，与 $a_i<\binom{n+i-1}{i}$ 矛盾，因此假设不成立，因此 $C_{a_i,i}-C_{a_i-1,i}=n_i\leq n-1$。
-   另一方面，由于 $a_j>\binom{n+j-1}{j}$，所以 $a_j-1\geq\binom{n+j-1}{j}$。取 $n_j$ 满足 $\binom{n_j+j-1}{j}\leq a_j-1<\binom{n_j+j}{j}$，根据原文定理 8.6 (2），$C_{a_j-1,j}-C_{a_j-2,j}=n_j$。假设 $n_j\leq n-1$，则 $a_j-1<\binom{n_j+j}{j}\leq\binom{n+j-1}{j}$，与 $a_j-1\geq\binom{n+j-1}{j}$ 矛盾，因此假设不成立，因此 $C_{a_j-1,j}-C_{a_j-2,j}=n_j\geq n$。于是：
+2. 如果 $\exists j\in[k]$ 使得 $a_j>\binom{n+j-1}{j}$，根据原文命题 8.11 (2)， $\exists i\in[k]$ 使得 $a_i<\binom{n+i-1}{i}$。取 $\mathbf{b}=(b_1,b_2,\dots,b_k)\in P_{N,k}$，其中 $b_i=a_i+1,b_j=a_j-1,\forall l\in[k]\backslash\{i,j\},a_l=b_l$。取 $n_i$ 满足 $\binom{n_i+i-1}{i}\leq a_i<\binom{n_i+i}{i}$，根据原文定理 8.6 (2)，$C_{a_i,i}-C_{a_i-1,i}=n_i$。假设 $n_i\geq n$，则 $a_i\geq\binom{n_i+i-1}{i}\geq\binom{n+i-1}{i}$，与 $a_i<\binom{n+i-1}{i}$ 矛盾，因此假设不成立，因此 $C_{a_i,i}-C_{a_i-1,i}=n_i\leq n-1$。
+   另一方面，由于 $a_j>\binom{n+j-1}{j}$，所以 $a_j-1\geq\binom{n+j-1}{j}$。取 $n_j$ 满足 $\binom{n_j+j-1}{j}\leq a_j-1<\binom{n_j+j}{j}$，根据原文定理 8.6 (2)，$C_{a_j-1,j}-C_{a_j-2,j}=n_j$。假设 $n_j\leq n-1$，则 $a_j-1<\binom{n_j+j}{j}\leq\binom{n+j-1}{j}$，与 $a_j-1\geq\binom{n+j-1}{j}$ 矛盾，因此假设不成立，因此 $C_{a_j-1,j}-C_{a_j-2,j}=n_j\geq n$。于是：
 
    $\begin{align}C(\mathbf{b})-C(\mathbf{a})&=N+\sum_{l:b_l>0}C_{b_l-1,l}-N-\sum_{l:a_l>0}C_{a_l-1,l}(原文引理 8.4)\\&=C_{b_i-1,i}+C_{b_j-1,j}-C_{a_i-1,i}-C_{a_j-1,j}\\&=C_{a_i,i}+C_{a_j-2,j}-C_{a_i-1,i}-C_{a_j-1,j}\\&=(C_{a_i,i}-C_{a_i-1,i})-(C_{a_j-1,j}-C_{a_j-2,j})\\&<0\end{align}$
 
@@ -1828,9 +1828,9 @@ $\begin{align}C(a)&=N+\sum_{i=1}^kC_{a_i-1,i} (原文引理 8.4) \\&=N+\sum_{i=1
 
 **原文推论 8.13。**
 
-1. 如果 $N=\binom{n+k}{k}-1$，那么根据原文定理 8.6 (1），$C_{N,k}=(N+1)n-\binom{n+k}{k+1}=\binom{n+k}{k}n-\binom{n+k}{k+1}=\binom{n+k}{k}n-\frac{n}{k+1}\binom{n+k}{k}=\frac{kn}{k+1}\binom{n+k}{k}=\frac{kn}{k+1}(N+1)$。
+1. 如果 $N=\binom{n+k}{k}-1$，那么根据原文定理 8.6 (1)，$C_{N,k}=(N+1)n-\binom{n+k}{k+1}=\binom{n+k}{k}n-\binom{n+k}{k+1}=\binom{n+k}{k}n-\frac{n}{k+1}\binom{n+k}{k}=\frac{kn}{k+1}\binom{n+k}{k}=\frac{kn}{k+1}(N+1)$。
 2. 如果 $N=\binom{n+k-1}{k}$，那么 $C_{N,k}>C_{N-1,k}=\frac{k(n-1)}{k+1}N$；
-   如果 $\binom{n+k-1}{k}< N\leq\binom{n+k}{k}-1$，那么根据原文定理 8.6 (2），$C_{N,k}=C_{N-1,k}+n\geq\frac{k(n-1)}{k+1}(N-1)+n\geq\frac{k}{k+1}(n-1)N$。因此 $A_{N,k}\geq\frac{k}{k+1}(n-1)\geq\frac{1}{2}(n-1)$。
+   如果 $\binom{n+k-1}{k}< N\leq\binom{n+k}{k}-1$，那么根据原文定理 8.6 (2)，$C_{N,k}=C_{N-1,k}+n\geq\frac{k(n-1)}{k+1}(N-1)+n\geq\frac{k}{k+1}(n-1)N$。因此 $A_{N,k}\geq\frac{k}{k+1}(n-1)\geq\frac{1}{2}(n-1)$。
 
 ### 11.4 二项式计数器与最优策略
 
