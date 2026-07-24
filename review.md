@@ -4,7 +4,7 @@
 
 ## 摘要
 
-本报告围绕 Tarjan 和 Zwick 的可变长数组研究展开。原文把操作完成后的稳定冗余 $s(N)$ 与扩缩容期间的临时冗余 $t(N)$ 分开度量，证明二者必须满足 $s(N)t(N)\ge N$；随后从 $r=3$ 的两级分块结构出发，用冗余 $B$ 进制计数器推广到一般 $r$，并通过分块变换在给定参数范围内把稳定冗余降到 $\mathrm{O}(N^{1/r})$。在时间方面，原文用增长博弈证明标准实现的 `Grow` 摊还成本为 $\Theta(r)$，同时保持访问操作的最坏 $\mathrm{O}(1)$ 时间。本报告依次梳理问题模型、相关工作、空间下界、数据结构上界、分块变换和时间下界，并说明这些最优性结论的适用范围。
+本报告围绕 Tarjan 和 Zwick 的可变长数组研究展开。原文把操作完成后的稳定冗余 $s(N)$ 与扩缩容期间的临时冗余 $t(N)$ 分开度量，证明二者必须满足 $s(N)t(N)\ge N$；随后从 $r=3$ 的两级分块结构出发，用冗余 $B$ 进制计数器推广到一般 $r$，并通过分块变换在给定参数范围内把稳定冗余降到 $\mathrm{O}(N^{1/r})$。在时间方面，原文用增长博弈证明标准实现的 `Grow` 摊还成本为 $\Theta(r)$，同时保持访问操作的最坏 $\mathrm{O}(1)$ 时间。本报告依次梳理问题模型、旧方法、空间下界、相关工作、数据结构上界、分块变换和时间下界，并说明这些最优性结论的适用范围。
 
 ## 1 问题与动机
 
@@ -270,7 +270,35 @@ HAT 与 Brodnik 结构的差异可以概括如下：
 
 ## 4 为什么旧下界仍允许新结果
 
-有别于新下界将稳定状态和重建瞬间严格区分，旧下界把稳定状态和重建瞬间统一计入“任意时刻空间”，从而使得旧下界需在所有时刻严格保持 $N+\mathrm{O}(\sqrt{N})$。Tarjan 和 Zwick 观察到，$N+\Omega(\sqrt{N})$ 只要求某个历史时刻出现该冗余，而这个时刻可能恰好是新块刚被申请、旧表示尚未释放的扩缩容过程。因而，只要接受扩缩容期间更高的临时峰值，一个结构仍可能在操作结束后只保留远少于 $\sqrt{N}$ 的稳定冗余。而这一点可以被推广成稳定冗余与临时冗余的乘积下界。
+第 3 节介绍的 HAT 和 Brodnik 结构虽然采用不同的数据块布局，却都把额外空间控制在平方根量级。这自然提出一个问题：$\sqrt N$ 是这两个具体设计恰好得到的结果，还是旧空间度量下任何可变长数组都无法突破的屏障？要回答这个问题，首先必须区分数据结构给出的空间上界与针对所有数据结构成立的空间下界。
+
+HAT 和 Brodnik 结构给出的是**构造性上界**。在它们各自的内存模型与实现规则下，当逻辑数组包含 $N$ 个元素时，无论结构正处于一次操作完成后的稳定状态，还是正在执行申请新块、复制指针、重建索引等扩缩容步骤，其总空间都可以控制在
+
+$$
+N+\mathrm{O}(\sqrt N)
+$$
+
+以内。这里的“任意时刻”属于上界保证：研究者已经给出了具体结构，并证明该结构执行过程中不会超过这个空间级别。换言之，上界回答的是“存在一个实现，能够在所有时刻不超过多少空间”。
+
+Brodnik 等人的旧下界使用的量词方向不同。它说明：对任意可变长数组实现，都可以找到一段操作序列以及该序列中的某个时刻，使结构在那个时刻至少使用
+
+$$
+N+\Omega(\sqrt N)
+$$
+
+空间，其中 $N$ 是发生该峰值时数组的长度。形式化地看，上界近似于“存在一个实现，使其对所有时刻都满足空间上界”；下界则近似于“对每一个实现，都存在某个时刻达到空间下界”。因此，下界只要求平方根级冗余在历史中的某个时刻出现，并没有声称结构在每个时刻、特别是每个操作结束后的稳定状态，都必须保留 $\Omega(\sqrt N)$ 冗余。
+
+把上述上、下界放在传统的单一空间指标下，二者在渐近意义上是匹配的：HAT 和 Brodnik 证明 $N+\mathrm{O}(\sqrt N)$ 足够，而旧下界证明某个时刻的 $N+\Omega(\sqrt N)$ 不可避免。所以，如果评价标准只记录整个执行过程中出现过的最大空间，那么平方根级冗余已经达到最优。但这个结论只确定了“峰值必须出现”，并没有确定峰值必须出现在哪一类状态，也没有说明操作结束后的长期表示必须同样大。
+
+Tarjan 和 Zwick 的关键观察正来自这个量词留下的空间。旧下界所保证的那个峰值时刻，完全可能发生在一次 `Grow` 或 `Shrink` 的内部。例如，数据结构为了重组布局而申请一个新块时，新块已经计入已分配空间，但旧元素尚未全部复制完成，旧块也还不能释放；此时新旧表示短暂共存，从而产生下界要求的空间峰值。复制和释放完成以后，结构却可能回到一个明显更紧凑的稳定表示。因此，“某个时刻必须达到平方根级冗余”并不推出“每次操作完成后都必须保留平方根级冗余”。
+
+基于这一观察，论文不再用一个峰值指标同时描述所有状态，而是分别度量稳定冗余 $s(N)$ 与扩缩容临时冗余 $t(N)$。新的问题不再是笼统地问能否突破 $\sqrt N$，而是问：如果允许 `Grow/Shrink` 过程中短暂使用较大的工作空间，操作完成后的稳定冗余可以压缩到什么程度？反过来，稳定表示越紧凑，扩缩容时至少必须付出多大的临时空间？第 5 节将先重述旧的 $\sqrt N$ 存在性下界，再把上述关系推广为
+
+$$
+s(N)t(N)\geq N,
+$$
+
+从而精确刻画这两个空间指标之间不能同时减小的约束。
 
 ## 5 空间下界
 
@@ -380,45 +408,53 @@ $r=2$ 对应 HAT 和 Brodnik 等旧结构所处的平衡点；$r=3$ 则预告原
 
 然而，空间下界并不说明 `Grow/Shrink` 的摊还时间必须为 $\Omega(r)$。该时间下界需要原文 §§8–9 的增长博弈，并且严格适用于作者定义的标准实现。因此，空间最优性与时间最优性需要分别证明，再在结论中合并；不能只引用原文定理 4.2，就声称所有维度均已达到最优。
 
+在进入具体的上界构造之前，本报告先把上述空间权衡放回相关工作和发表后发展的脉络中。第 7 节完成这一背景说明后，本报告第 8 节将从原文 §5 的 $r=3$ 具体结构开始，介绍匹配空间下界的上界构造。
+
 ## 7 相关工作与发表后发展
 
-前文为了验证复杂度，已经技术性地介绍了几何扩缩容、HAT 和 Brodnik 结构。本节不重复其完整操作流程，而是回答三个不同问题：这些结构为何被提出，它们在更大的动态数据结构研究中处于什么位置，以及 Tarjan-Zwick 发表后出现了哪些实现和经验工作。
+在转入上界构造前，本节先从直接前驱、简洁动态数据结构背景、一般动态序列和发表后实现几个方面定位 Tarjan-Zwick 的贡献。前文为了验证复杂度，已经技术性地介绍了几何扩缩容、HAT 和 Brodnik 结构，本节不再重复其完整操作流程。
 
 ### 7.1 可变长数组的直接前驱
 
-标准意义下的几何扩缩容确立了最常见的基线：连续存储带来最简单的常数访问；固定增长因子带来常数摊还更新；代价是稳定状态与重建过程都可能出现 $\Theta(N)$ 冗余。减小增长因子只能改变常数比例，不能得到 $N+o(N)$ 空间。
+标准意义下的几何扩缩容确立了最常见的基线：连续存储带来最简单的常数访问；固定增长因子带来常数摊还更新；代价是稳定状态与重建过程都可能出现 $\Theta(N)$ 冗余。减小增长因子只能改变常数比例，不能得到 $N+o(N)$ 空间[3, §17.4]。
 
-Sitarski 1996 年提出 HAT 的直接动机来自数据库程序：查询结果长度无法预知，商业可变长数组类在扩展时执行大量复制。其原文不仅给出 Top（索引块）和 Leaves（数据块）的两级结构，还分析了位级寻址、内存碎片和累计复制量。对于 $N=4^m$ 个顺序加入的元素，重建复制量形成 $1+4+\ldots+N=(4N-1)/3$，因此总复制为 $\mathrm{O}(N)$。原文还估计最坏冗余约为 $2\sqrt{N}$，并在 1990 年代硬件上比较 HAT 与普通 C++ 数组。由此可见，HAT 从一开始就同时关注渐近空间、复制次数和工程可用性；但其旧实验只能作为历史证据，不能直接预测现代机器性能。
+Sitarski 1996 年提出 HAT 的直接动机来自数据库程序：查询结果长度无法预知，商业可变长数组类在扩展时执行大量复制[7]。其原文不仅给出 Top（索引块）和 Leaves（数据块）的两级结构，还分析了位级寻址、内存碎片和累计复制量[7]。对于 $N=4^m$ 个顺序加入的元素，重建复制量形成 $1+4+\ldots+N=(4N-1)/3$，因此总复制为 $\mathrm{O}(N)$[7]。原文还估计最坏冗余约为 $2\sqrt{N}$，并在 1990 年代硬件上比较 HAT 与普通 C++ 数组[7]。由此可见，HAT 从一开始就同时关注渐近空间、复制次数和工程可用性；但其旧实验只能作为历史证据，不能直接预测现代机器性能。
 
-Brodnik 等人 1999 年从随机队列（randomized queue）出发，把单端可变长数组放入更完整的动态分配模型中。原文把内存块头部（headers）计入空间，定义 $Allocate/Deallocate/Reallocate$，并用最大块大小 `f(N)` 与块数量 `g(N)` 的关系
+Brodnik 等人 1999 年从随机队列（randomized queue）出发，把单端可变长数组放入更完整的动态分配模型中[6]。原文把内存块头部（headers）计入空间，定义 $Allocate/Deallocate/Reallocate$，并用最大块大小 `f(N)` 与块数量 `g(N)` 的关系
 
 $$
   f(N)g(N) \geq  N
 $$
 
-得到 $\Omega(\sqrt{N})$ 峰值冗余下界。其最终结构使用虚拟超级块和位运算定位，并给出可执行的 `Grow`、`Shrink` 与 `Locate` 算法；通过后台复制索引指针得到最坏 $\mathrm{O}(1)$ 操作，还给出适配伙伴系统（buddy system）的版本。该结构进一步导出栈、队列、随机队列、优先队列和双端队列等结果。
+得到 $\Omega(\sqrt{N})$ 峰值冗余下界[6]。其最终结构使用虚拟超级块和位运算定位，并给出可执行的 `Grow`、`Shrink` 与 `Locate` 算法；通过后台复制索引指针得到最坏 $\mathrm{O}(1)$ 操作，还给出适配伙伴系统（buddy system）的版本[6]。该结构进一步导出栈、队列、随机队列、优先队列和双端队列等结果[6]。
 
-两项旧工作共同优化的是“任意时刻总空间”，其自然平衡点为 $N+\Theta(\sqrt{N})$。Tarjan-Zwick 并未否定这一旧下界，而是改变了度量：把稳定存储空间和扩缩容临时空间分开，再研究两者与更新时间的完整权衡。
+两项旧工作共同优化的是“任意时刻总空间”，其自然平衡点为 $N+\Theta(\sqrt{N})$[6][7]。Tarjan-Zwick 并未否定这一旧下界，而是改变了度量：把稳定存储空间和扩缩容临时空间分开，再研究两者与更新时间的完整权衡[1]。
 
 ### 7.2 简洁动态数据结构背景
 
-在简洁动态数据结构层面，可变长数组的低冗余表示属于简洁数据结构（succinct data structures）的广泛背景。Raman、Raman 与 Rao 研究动态简洁结构，Raman 与 Rao 进一步研究动态字典和树，Munro 与 Rao 的综述则系统整理了相关表示方法。这个方向通常要求数据结构占用接近信息论最低编码长度的比特数，并在低阶附加空间内支持查询和更新。
+在简洁动态数据结构层面，可变长数组的低冗余表示属于简洁数据结构（succinct data structures）的广泛背景，但三篇文献处理的对象并不相同。Raman、Raman 与 Rao 研究可搜索部分和、动态位向量以及允许任意位置插删的动态数组；其两种动态数组方案都只使用 $o(N)$ 比特附加空间，一种以最坏 $\mathrm{O}(N^\epsilon)$ 更新时间换取最坏 $\mathrm{O}(1)$ 访问，另一种让全部操作达到摊还 $\mathrm{O}(\log N/\log\log N)$[8]。Raman 与 Rao 随后研究动态字典和动态二叉树，目标是让表示空间逼近相应的信息论最低编码长度，同时支持字典查询、更新或树导航[9]。Munro 与 Rao 的综述则系统整理了静态和动态简洁表示的主要方法[10]。
 
-Tarjan-Zwick 与该方向共享“主数据加低阶冗余”的目标，但空间基线不同：原文把 $N$ 个任意机器字元素本身所需的 $N$ 个机器字作为不可压缩主数据，再优化其上的指针、空槽和重组空间。因此，本报告可以把它放入简洁结构研究背景，却不应把 $N+o(N)$ 个机器字与经典的比特级简洁编码当作完全相同的结论。
+这些工作体现了简洁数据结构的一般目标：在接近信息论最低编码长度的空间内支持有效操作。不过，Tarjan-Zwick 的空间基线不同：原文把 $N$ 个任意机器字元素本身所需的 $N$ 个机器字作为不可压缩主数据，再优化其上的指针、空槽和重组空间[1]。因此，本报告可以把它放入简洁结构研究背景，却不应把 $N+o(N)$ 个机器字与经典的比特级简洁编码当作完全相同的结论，也不应把[8]和[9]的具体时间界直接移用于本文的末端更新模型。
 
 ### 7.3 更强的一般动态序列问题
 
-原文只允许在最大下标一端执行 `Grow/Shrink`。Dietz 的 list indexing 和 Fredman-Saks 的动态数据结构下界研究的是更强的秩维护问题：若在任意位置插入或删除，后续元素的逻辑下标都会改变。Tarjan-Zwick 引言据此指出，所有操作同时支持时会出现 $\Theta(\log N/\log \log N)$ 量级的界，这与本报告讨论的末端常数访问问题不是同一操作模型。
+原文只允许在最大下标一端执行 `Grow/Shrink`。作为对照，Dietz 研究了 list indexing 和 subset rank，并在 RAM 模型中给出 $\mathrm{O}(\log N/\log\log N)$ 的最优算法[11]；其中 list indexing 支持在指定记录之后插入、删除指定记录以及查询记录位置，Dietz 还说明 Fredman 与 Saks 将相应问题称为 list representation。Fredman 与 Saks 在对数词长的 cell-probe 模型中证明 list representation 和 subset rank 均需要 $\Omega(\log N/\log\log N)$ 摊还时间[12]。这里应区分两种更新：链表问题中的任意位置插删会改变后续记录的秩，而 subset rank 维护的是有序全集的动态子集，插删某个键后查询该键之前的集合元素数。前者扩展了本文的更新位置，后者则是具有不同更新和查询语义的相关问题，不能笼统归为完全相同的“动态序列插删”。因此，这组紧确界不能与本文末端更新的 $\mathrm{O}(r)$ 摊还界直接比较[1][11][12]。
 
-Goodrich 与 Kloss 的分层向量（tiered vectors）用常数层分级结构支持一般位置更新；在固定层数下可以保持常数访问，并以 $N$ 的分数次幂时间完成插入和删除。Bille 等人 2017 年进一步实现多层分层向量，支持 $\mathrm{O}(1)$ 访问、$\mathrm{O}(N^epsilon)$ 插删和 `o(N)` 冗余，并给出大规模 C++ 实验。这些工作说明“多层分块”也能服务于一般动态序列，但其更新时间不能与只在末端更新的 $\mathrm{O}(r)$ 摊还界直接比较。
+Goodrich 与 Kloss 的分层向量（tiered vectors）用常数层分级结构支持一般位置更新：对固定常数 $\epsilon>0$，访问为最坏 $\mathrm{O}(1/\epsilon)$，插入和删除为摊还 $\mathrm{O}(N^\epsilon)$，附加空间为 $\mathrm{O}(N^{1-\epsilon})$ 个机器字[13]。Bille 等人 2017 年进一步给出多层分层向量的实现与分析；固定层数后，访问可视为常数时间，插删为 $N$ 的分数次幂时间，附加空间为 $o(N)$，并在最多 $10^8$ 个 32 位整数的序列上进行 C++ 实验[14]。这些工作说明“多层分块”也能服务于一般位置插删，但其接口和更新时间不能与只在末端更新的 $\mathrm{O}(r)$ 摊还界直接比较。
 
 ### 7.4 实践研究与发表后发展
 
-Joannou 与 Raman 对可扩展数组（extensible arrays）进行了经验比较，Katajainen 则研究如何在实践中实现具有最坏情况保证的动态数组。这些研究提醒我们：渐近冗余、访问指令数量、缓存局部性、分配器行为和实现常数是不同评价维度。Sitarski 的早期基准和 Brodnik 的伙伴系统版本也属于这条实践脉络，而不是 Tarjan-Zwick 新下界的一部分。
+Joannou 与 Raman 比较了多种可扩展数组及可扩展数组集合的实现，实验同时考察增长、顺序与随机访问，并特别讨论内部和外部内存碎片[15]。Katajainen 则基准测试四类支持 `operator[]`、`push_back` 和 `pop_back` 最坏 $\mathrm{O}(1)$ 代价的动态数组方案，并比较其空间界、访问性能和实现稳健性；论文的结论是这些最坏情况高效方案通常比 C++ 标准库的摊还方案更慢，而切片数组在给定实验中是较合理的实践折中[16]。这些研究提醒我们：渐近冗余、访问指令数量、缓存局部性、分配器行为和实现常数是不同评价维度，其实验结果也只在各自实现和测试环境内成立。Sitarski 的早期基准[7]和 Brodnik 的伙伴系统版本[6]同样属于这条实践脉络，而不是 Tarjan-Zwick 新下界的一部分。
 
-Tarjan-Zwick 的初步版本发表于 SOSA 2023，最终版本发表于 2024 年 *SIAM Journal on Computing*。最终期刊版致谢 Christian Kjær 和 Victor Brevig，并说明他们的实现促使作者简化原文 §6.3 的常数时间访问方法。两人的 DTU 学位论文实现并测试了 Tarjan-Zwick 的结构，补充了原文没有完全展开的重建细节；其实验认为，理论 $\mathrm{O}(1)$ 定位在实际可用的较小 $r$ 上可能慢于简单的 $\mathrm{O}(r)$ 循环定位，并比较了稳定冗余、临时峰值、访问和更新成本。
+Tarjan-Zwick 的 SOSA 2023 论文是初步版本，最终版本发表于 2024 年 *SIAM Journal on Computing*。期刊版首页脚注说明，相对会议版，大部分修改集中在原文 §6.3，作者在那里给出了进一步简化的最坏 $\mathrm{O}(1)$ 元素访问方法[1, p. 1354]。这只能说明修改的主要集中位置，不能据此断言期刊版只有 §6.3 发生变化。
 
-根据近两年的学术研究，2025 年出现了独立 Rust 实现 `tzarrays`，说明该结构已经有论文作者之外的工程实现。不过，学位论文和代码仓库不等同于新的同行评审理论结果。截至 2026-07-16 的本轮公开检索，确认的发表后发展主要是最终期刊版本、实现与经验评估；尚未确认有同行评审理论工作进一步改进其渐近权衡。这是带检索范围和日期的结论，不能改写成“此后绝对没有研究”。
+在发表后的实现与经验工作中，Christian Rosenkilde Husted Kjær 和 Victor Brevig 于 2023 年完成了 DTU Compute 硕士论文 *Optimal Resizable Arrays*。该论文实现并测试了 Tarjan-Zwick 的结构，比较了稳定冗余、临时峰值、插入和访问时间，并补充讨论了 rebuild 等工程细节[17]。论文作者将其限定为“据其所知”的首个 Tarjan-Zwick 结构实现，而不是一个经过独立穷尽检索证明的绝对优先权结论[17, §1]。
+
+在该论文的具体实现、参数和测试环境下，作者观察到：对于实验采用的较小 $r$，理论最坏 $\mathrm{O}(1)$ 的定位方法反而慢于结构更简单的 $\mathrm{O}(r)$ 循环定位；例如其测试的 $r=3,6,10$ 均出现这一现象[17, §5.3]。这反映的是复杂定位计算的指令常数与实现开销，并不否定 $\mathrm{O}(1)$ 方法的渐近时间界。与首页脚注这一版本说明相互独立，期刊版致谢还感谢 Kjær 和 Brevig，并称他们的实现促使作者进一步简化原文 §6.3 的访问方法[1, Acknowledgments]。
+
+此外，N. Fiedler 于 2025 年发布 Rust crate `tzarrays`，其文档明确以 Tarjan-Zwick 的论文为实现依据，并提供末端 `push/pop` 型可变长数组接口，而不支持一般位置的保持顺序插入和删除[18]。本报告核对的版本为 1.0.1，发布于 2025-09-25；它说明该结构已有论文作者之外的开源工程实现，但软件仓库本身不构成新的同行评审理论结果，也不足以单独证明实现达到了原论文的每一项理论界。
+
+截至 2026-07-16 的本轮公开检索，确认的发表后发展主要是最终期刊版本、实现与经验评估；尚未确认有同行评审理论工作进一步改进其渐近权衡。这是带检索范围和日期的结论，不能改写成“此后绝对没有研究”。
 
 ### 7.5 原文在研究脉络中的位置
 
@@ -518,7 +554,7 @@ C++ 的动态数组 `vector`，每当数组空间（大小为 $N$）满了却仍
 索引数组所占的空间为 $\mathrm{O}(N^{1/3})$。
 在分配的两种类型的空间中，大小为 $B^2$ 的空间永远是满的（大块满载不变量），永远是被充分利用的。
 大小为 $B$ 的空间最多只有一块不是满的（小块填充不变量），即最多只有一块是有冗余的，冗余大小不超过 $B$（$\mathrm{O}(N^{1/3})$）。
-所以，可知常态存储冗余空间为 $\mathrm{O}(N^{1/3})$。
+所以，可知稳定冗余为 $\mathrm{O}(N^{1/3})$。
 
 #### 8.3.3 扩缩容的临时空间
 
@@ -1718,7 +1754,7 @@ $$
    因此 $C_k(0,\dots,0,a_k)=C_{a_k-1,k}+a_k$。
 4. 综上，对于 $\mathbf{a}\in P_{N,k}$，如果有 $0=a_{i-1}<a_i$，那么
    $C(\mathbf{a})=\sum_{j=i}^kC_j(0,\dots,0,a_j)=\sum_{j=i}^kC_{a_j-1,j}+a_j=N+\sum_{j=i}^kC_{a_j-1,j}$。
-由此我们把计算 $C(\mathbf{a})$ 拆成了计算若干个 $C_{N,k}$ 的子问题。
+   由此我们把计算 $C(\mathbf{a})$ 拆成了计算若干个 $C_{N,k}$ 的子问题。
 
 ### 11.3 最小总成本 $C_{N,k}$ 的精确计算
 
@@ -1830,7 +1866,7 @@ Increment(k):
 2. 假设上式对当前 $(a_1,a_2,\dots,a_k)$ 和 $(b_1,b_2,\dots,b_k)$ 成立，设 $b_1=b_2=\dots=b_i=n<b_{i+1}$。
    新值 $a_i'=1+\sum_{j=1}^ia_j,b_i'=b_i+1$。
    $a_i'=1+\sum_{j=1}^ia_j=1+\sum_{j=1}^i\binom{n+j-1}{j}=\sum_{j=0}^i\binom{n+j-1}{j}=\binom{n+i}{i}=\binom{b_i'+i-1}{i}$。
-上式得证。
+   上式得证。
 
 **原文引理 8.16。** 考虑以下时刻：$b_1=b_2=\dots=b_k=n$，根据原文引理 8.15，此时 $N=\sum_{i=1}^ka_i=\sum_{i=1}^k\binom{n+i-1}{i}=\binom{n+k}{k}-1$，根据原文引理 8.14，二项式计数器达到该状态的过程是 $(N,k)$-增长博弈的唯一最优解。
 
@@ -1909,3 +1945,27 @@ Increment(k):
 [5] TARJAN R E, ZWICK U. Optimal resizable arrays: arXiv v2[EB/OL]. (2023-05-29)[2026-07-18]. <https://arxiv.org/abs/2211.11009v2>.
 
 [6] BRODNIK A, CARLSSON S, DEMAINE E D, et al. Resizable arrays in optimal time and space[C]//Algorithms and Data Structures: 6th International Workshop, WADS 1999. Berlin: Springer, 1999: 37-48. DOI: 10.1007/3-540-48447-7_4.
+
+[7] SITARSKI E. Algorithm alley: HATs: Hashed array trees[J]. Dr. Dobb's Journal of Software Tools, 1996, 21(9): 107-108.
+
+[8] RAMAN R, RAMAN V, RAO S S. Succinct dynamic data structures[C]//Algorithms and Data Structures: 7th International Workshop, WADS 2001. Berlin: Springer, 2001: 426-437. DOI: 10.1007/3-540-44634-6_39.
+
+[9] RAMAN R, RAO S S. Succinct dynamic dictionaries and trees[C]//Automata, Languages and Programming: 30th International Colloquium, ICALP 2003. Berlin: Springer, 2003: 357-368. DOI: 10.1007/3-540-45061-0_30.
+
+[10] MUNRO J I, RAO S S. Succinct representation of data structures[M]//MEHTA D P, SAHNI S, eds. Handbook of Data Structures and Applications. 2nd ed. Boca Raton: CRC Press, 2018, Chapter 38.
+
+[11] DIETZ P F. Optimal algorithms for list indexing and subset rank[C]//Algorithms and Data Structures: Workshop WADS 1989. Berlin: Springer, 1989: 39-46. DOI: 10.1007/3-540-51542-9_5.
+
+[12] FREDMAN M L, SAKS M E. The cell probe complexity of dynamic data structures[C]//Proceedings of the 21st Annual ACM Symposium on Theory of Computing. New York: ACM, 1989: 345-354. DOI: 10.1145/73007.73040.
+
+[13] GOODRICH M T, KLOSS J G II. Tiered vectors: Efficient dynamic arrays for rank-based sequences[C]//Algorithms and Data Structures: 6th International Workshop, WADS 1999. Berlin: Springer, 1999: 205-216. DOI: 10.1007/3-540-48447-7_21.
+
+[14] BILLE P, CHRISTIANSEN A R, ETTIENNE M B, GØRTZ I L. Fast dynamic arrays[C]//25th Annual European Symposium on Algorithms, ESA 2017. Dagstuhl: Schloss Dagstuhl--Leibniz-Zentrum für Informatik, 2017, 87: 16:1-16:13. DOI: 10.4230/LIPIcs.ESA.2017.16.
+
+[15] JOANNOU S, RAMAN R. An empirical evaluation of extendible arrays[C]//Experimental Algorithms: 10th International Symposium, SEA 2011. Berlin: Springer, 2011: 447-458. DOI: 10.1007/978-3-642-20662-7_38.
+
+[16] KATAJAINEN J. Worst-case-efficient dynamic arrays in practice[C]//Experimental Algorithms: 15th International Symposium, SEA 2016. Cham: Springer, 2016: 167-183. DOI: 10.1007/978-3-319-38851-9_12.
+
+[17] KJÆR C R H, BREVIG V. Optimal resizable arrays[D/OL]. Lyngby: DTU Compute, Technical University of Denmark, 2023[2026-07-23]. https://www.victorbrevig.dev/pdfs/OptimalResizableArrays.pdf.
+
+[18] FIEDLER N. tzarrays: Optimal resizable arrays in Rust[CP/OL]. Version 1.0.1. (2025-09-25)[2026-07-23]. https://github.com/nlfiedler/tzarrays.
